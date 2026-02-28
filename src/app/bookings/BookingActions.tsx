@@ -8,7 +8,7 @@ type Props = {
 
 export default function BookingActions({ bookingId }: Props) {
   async function handleAction(action: 'approve' | 'reject') {
-    await fetch('/api/bookings/${bookingId}', {
+    await fetch(`/api/bookings/${bookingId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action })

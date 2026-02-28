@@ -1,11 +1,9 @@
 //this is the authorization infrastructure that will be swapped out for middleware 
 //this will run first before the api routes, extract identity from the header(that's from the browser)
 //evaluate that identity if it exists, either return an authenticated user or an error message
-import { users } from '@/app/api/data'
-import { User } from '@/types'
 
 type AuthSuccess = {
-  user: User
+  userId: number
 }
 //this is the contract that the error code should follow
 type AuthFailure = {
@@ -18,16 +16,10 @@ export function requireAuth(
   const userId = request.headers.get('x-user-id')
 
   if(!userId) {
-    return { error: 'Unauthorized', status: 402 }
+    return { error: 'Unauthorized', status: 401 }
   }
 
-  const user = users.find(u => u.id === Number(userId))
-  //Number(userId) because headers return strings, types must be normalized before comparison
-  if(!user) {
-    return{ error: 'Unauthorized', status: 401 }
-  }
-
-  return { user }
+  return { userId: Number(userId) }
 }
 
 

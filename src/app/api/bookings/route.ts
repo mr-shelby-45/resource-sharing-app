@@ -1,7 +1,6 @@
 import { requireAuth } from '@/lib/auth';
-import { bookings, items } from '../data'
 import { canCreateBooking } from '@/lib/permissions'
-import { Booking } from '@/types'
+import { prisma } from '@/lib/prisma';
 
 
 export async function POST(request: Request) {
@@ -14,10 +13,20 @@ export async function POST(request: Request) {
       { status: auth.status }
     )
   }
-
-  const currentUser = auth.user
+  const user = await prisma.user.findUnique({
+    where: { id: auth.userId}
+  })
+  
+  if(!user) {
+    return Response.json(
+      { message: 'User not found' },
+      { status: 404 }
+    )
+  }
+  
+  const currentUser = user
   //2. authorization(check the role of the authenticated user)
-  if(currentUser.role !== 'borrower') {
+  if(currentUser.role !== 'BORROWER') {
     return Response.json (
       { message: 'Forbidden' },
       { status: 403 }
@@ -27,7 +36,9 @@ export async function POST(request: Request) {
   const body: { itemId: number} = await request.json()
   //finds item in items and compares to body.item to check its availability
   
-  const item = items.find(i => i.id === body.itemId)
+  const item = await prisma.item.findUnique({
+    where: { id: body.itemId }
+  })
 
   if(!item) {
     return Response.json(
@@ -46,19 +57,26 @@ export async function POST(request: Request) {
   }
 
   //declares new var (newBooking) and enforces the type Booking in types.ts newBooking: Booking enforces the contract in types.
-
+  /*
   const newBooking: Booking = {
     id: bookings.length +1,
     itemId: body.itemId,
     borrowerId: currentUser.id,
-    status: 'pending' as const
+    status: 'PENDING' as const
+  }*/
+ const newBooking = await prisma.booking.create({
+  data: {
+    itemId: body.itemId,
+    borrowerId: currentUser.id,
+    status: 'PENDING'
   }
+ })
 
-  bookings.push(newBooking)
 
   return Response.json(newBooking, { status: 201 })
 }
 
 export async function GET() {
+  const bookings = await prisma.booking.findMany()
   return Response.json(bookings)
 }

@@ -1,5 +1,5 @@
 //simulated db where i will import from when writing the code for the api routes
-import { User, Item, Booking } from '@/types'
+import { User, Item, Booking } from '@/generated/prisma/client'
 
 export let users : User[] = [
   { id: 1, name: 'Alice', phone: '0712345678', role: 'owner'},

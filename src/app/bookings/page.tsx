@@ -17,7 +17,7 @@ export default function BookingsPage() {
               <p>Item: {item?.title}</p>
               <p>Status: {booking.status}</p>
 
-              {booking.status === 'pending' && (
+              {booking.status === 'PENDING' && (
                 <BookingActions bookingId={booking.id} />
               )}
             </li>

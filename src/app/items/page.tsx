@@ -4,7 +4,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Item } from '@/types'
+import { Item } from '@/generated/prisma/client'
 
 export default function ItemsPage() {
   const[items, setItems] = useState<Item[]>([])
