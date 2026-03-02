@@ -31,20 +31,26 @@ model User {
   phone String
   email String  @unique
   role  Role
+  items Item[]
+  bookings Booking[]
 }
 
 model Item {
   id          Int     @id @default(autoincrement())
-  ownerId     Int     
+  ownerId     Int    
+  owner       User    @relation(fields: [ownerId], references: [id]) 
   title       String
   description String
   available   Boolean @default(true)
+  bookings    Booking[]
 }
 
 model Booking {
   id         Int           @id @default(autoincrement())
   itemId     Int
   borrowerId Int
+  borrower   User      @relation(fields: [borrowerId], references:[id])
+  item      Item   @relation(fields: [itemId], references: [id])
   status     BookingStatus @default(PENDING)
 }
 
