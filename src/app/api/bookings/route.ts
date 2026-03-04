@@ -75,8 +75,13 @@ export async function POST(request: Request) {
 
   return Response.json(newBooking, { status: 201 })
 }
-
+//one query returns the booking with the full item and borrower
 export async function GET() {
-  const bookings = await prisma.booking.findMany()
+  const bookings = await prisma.booking.findMany({
+    include: {
+      item: true,
+      borrower: true
+    }
+  })
   return Response.json(bookings)
 }

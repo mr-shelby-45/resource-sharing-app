@@ -1,11 +1,8 @@
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
-  await prisma.booking.deleteMany()
-  await prisma.item.deleteMany()
-  await prisma.user.deleteMany()
 
-  await prisma.user.upsert({
+  const alice = await prisma.user.upsert({
     where: { email: 'alice@gmail.com' },
     update: {},
     create: {
@@ -29,7 +26,7 @@ async function main() {
 
   await prisma.item.create({
     data: {
-      ownerId: 1,
+      ownerId: alice.id,
       title: 'Electric drill',
       description: 'Good condition, light use'
     }

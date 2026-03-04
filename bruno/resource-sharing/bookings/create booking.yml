@@ -4,19 +4,16 @@ info:
   seq: 1
 
 http:
-  method: POST
-  url: http://localhost:3000/api/bookings
+  method: PATCH
+  url: http://localhost:3000/api/bookings/1
   headers:
     - name: x-user-id
-      value: "2"
+      value: "1"
     - name: Content-Type
       value: application/json
   body:
     type: json
-    data: |-
-      {
-        "itemId": 1
-      }
+    data: ""
   auth: inherit
 
 settings:
