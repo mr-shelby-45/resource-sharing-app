@@ -43,7 +43,7 @@ export function canApproveBooking( user: User, item: Item, booking: Booking) {
   }
   //booking must be pending -> checks if the booking has been cancelled.
   if(booking.status !== 'PENDING') {
-    return { allowed: false, message: 'booking is not pending'}
+    return { allowed: false, message: 'This booking has already been processed!'}
   }
 
   return { allowed: true }

@@ -1,4 +1,7 @@
 //client component that the owner accepts or rejects a booking.
+//booking is split into a server and client 
+//bookingActions - client buttons, eventhandler
+//pages -> fetches the bookings, conditional rendering.
 
 'use client'
 

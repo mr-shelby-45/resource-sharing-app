@@ -52,6 +52,7 @@ model Booking {
   borrower   User      @relation(fields: [borrowerId], references:[id])
   item       Item       @relation(fields: [itemId], references: [id])
   status     BookingStatus @default(PENDING)
+
 }
 
 
