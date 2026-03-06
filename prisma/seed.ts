@@ -15,7 +15,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: 'mac@gmail.com'},
-    update: {phone: '0787654321'},
+    update: {},
     create: {
       name: 'Mac',
       phone: '0787654321',
@@ -24,8 +24,10 @@ async function main() {
     }
   })
 
-  await prisma.item.create({
-    data: {
+  await prisma.item.upsert({
+    where: { id: 1 },
+    update: { available: true },
+    create: {
       ownerId: alice.id,
       title: 'Electric drill',
       description: 'Good condition, light use'

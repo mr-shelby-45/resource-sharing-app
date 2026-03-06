@@ -74,16 +74,25 @@ export async function PATCH(
   }
   //change the status to approved, consequently its becomes unavailable.
 
-  const updatedBooking = await prisma.booking.update({
-    where: { id: bookingId },
-    data: { status: 'APPROVED'}
-  })
-
-  
-  await prisma.item.update({
-    where: { id: item.id},
-    data: { available: false }
-  })
+  const updatedBooking = await prisma.$transaction([
+    prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'APPROVED' }
+    }),
+    prisma.item.update({
+      where: { id: item.id },
+      data: { available: false }
+    }),
+    prisma.booking.updateMany({
+      where: {
+        NOT: {
+          id: bookingId
+        },
+        status: 'PENDING'
+      },
+      data: { status: 'REJECTED' }
+    })
+  ])
 
   return Response.json(updatedBooking, {status: 200})//sucess
 
