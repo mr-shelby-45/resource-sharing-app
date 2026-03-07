@@ -4,18 +4,14 @@ info:
   seq: 1
 
 http:
-  method: GET
-  url: http://localhost:3000/api/bookings
-  headers:
-    - name: x-user-id
-      value: "2"
-    - name: Content-Type
-      value: application/json
+  method: POST
+  url: http://localhost:3000/api/auth/login
   body:
     type: json
     data: |-
       {
-        "itemId": 1
+        "email": "alice@gmail.com",
+        "password": "password234"
       }
   auth: inherit
 
