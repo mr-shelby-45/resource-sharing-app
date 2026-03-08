@@ -4,11 +4,18 @@ info:
   seq: 1
 
 http:
-  method: PATCH
-  url: http://localhost:3000/api/bookings/1
+  method: POST
+  url: http://localhost:3000/api/auth/register
   body:
     type: json
-    data: ""
+    data: |-
+      {
+        "name": "John",
+        "phone": "0712345999",
+        "email": "john@gmail.com",
+        "password": "john1234",
+        "role": "BORROWER"
+      }
   auth: inherit
 
 settings:

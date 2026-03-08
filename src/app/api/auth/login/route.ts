@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import bcrypt, { compare  } from "bcryptjs"
+import bcrypt from "bcryptjs"
 import { sign } from "jsonwebtoken"
 
 export async function POST(request: Request) {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   const response = Response.json(
     { message: 'Login successful'},
-    { status: 200 }
+    { status: 201 }
   )
 
   response.headers.set(
