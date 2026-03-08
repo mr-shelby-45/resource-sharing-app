@@ -4,15 +4,11 @@ info:
   seq: 1
 
 http:
-  method: POST
-  url: http://localhost:3000/api/auth/login
+  method: PATCH
+  url: http://localhost:3000/api/bookings/1
   body:
     type: json
-    data: |-
-      {
-        "email": "alice@gmail.com",
-        "password": "password234"
-      }
+    data: ""
   auth: inherit
 
 settings:

@@ -1,6 +1,7 @@
 //this is the authorization infrastructure that will be swapped out for middleware 
 //this will run first before the api routes, extract identity from the header(that's from the browser)
 //evaluate that identity if it exists, either return an authenticated user or an error message
+import { verify } from "jsonwebtoken"
 
 type AuthSuccess = {
   userId: number
@@ -13,13 +14,24 @@ type AuthFailure = {
 export function requireAuth(
   request: Request
 ): AuthSuccess | AuthFailure {
-  const userId = request.headers.get('x-user-id')
+  const cookieHeader = request.headers.get('cookie')
 
-  if(!userId) {
+  const token = cookieHeader
+    ?.split(';')
+    .find(c => c.trim().startsWith('token'))
+    ?.split('=')[1]
+
+  if(!token) {
     return { error: 'Unauthorized', status: 401 }
   }
 
-  return { userId: Number(userId) }
+  try {
+    const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number } 
+    return { userId: decoded.userId }
+  } catch {
+    return { error: 'Unauthorized ', status: 401 }
+  }
+
 }
 
 
