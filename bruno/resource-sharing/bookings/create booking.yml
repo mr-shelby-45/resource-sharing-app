@@ -5,16 +5,13 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/auth/register
+  url: http://localhost:3000/api/items
   body:
     type: json
     data: |-
       {
-        "name": "John",
-        "phone": "0712345999",
-        "email": "john@gmail.com",
-        "password": "john1234",
-        "role": "BORROWER"
+        "title": "pressure washer",
+        "description": "Good condition, barely used"
       }
   auth: inherit
 

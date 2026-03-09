@@ -3,6 +3,16 @@ import { User, Item, Booking } from '@/generated/prisma/client'
 
 //note: inorder not to bring about return bugs, then you have to deny the invalid cases first, start with the specific checks first then move on to broad checks
 //admin check in this case comes first, returns true then all the other conditions are skipped, therefore they have all the permissions
+export function canAddItem(user: User) {
+  if(user.role === 'ADMIN') {
+    return { allowed: true }
+  }
+  if(user.role !== 'OWNER') {
+    return { allowed: false, message: 'Only Owners can create add new items'}
+  }
+  return { allowed: true }
+ 
+}
 
 export function canCreateBooking(user: User, item: Item) {
   //only role check is borrower

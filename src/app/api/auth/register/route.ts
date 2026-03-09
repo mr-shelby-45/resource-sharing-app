@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   const userPassword = await hash(`${password}`, 10)
-
+  //storing data from the body in db via prisma.create
   const newUser = await prisma.user.create({
     data: {
     name,
@@ -27,16 +27,17 @@ export async function POST(request: Request) {
     role
     }
   })
-
+  //token containing user's id and role signed by the private key
   const token = sign(
     { userId: newUser.id, role: newUser.role },
     process.env.JWT_SECRET!,
-    { expiresIn: '7d'}
+    { expiresIn: '7d' }
   )
   const response = Response.json(
     { message: 'login suceessful'},
     { status: 201 }
   )
+  //set cookie as http-only, won't be locally to prevent XSS
   response.headers.set(
     'Set-Cookie', `token=${token}; HttpOnly; Path=/;
     Max-Age=604800; SameSite=Strict`
