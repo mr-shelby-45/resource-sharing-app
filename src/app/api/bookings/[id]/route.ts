@@ -1,5 +1,4 @@
 //find booking by id,change status to approved,set item.available to FALSE, Reject other bookings for the same item by owner
-
 import { canApproveBooking } from '@/lib/permissions'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -78,10 +77,6 @@ export async function PATCH(
     prisma.booking.update({
       where: { id: bookingId },
       data: { status: 'APPROVED' }
-    }),
-    prisma.item.update({
-      where: { id: item.id },
-      data: { available: false }
     }),
     prisma.booking.updateMany({
       where: {

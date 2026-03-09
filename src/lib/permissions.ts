@@ -14,7 +14,7 @@ export function canAddItem(user: User) {
  
 }
 
-export function canCreateBooking(user: User, item: Item) {
+export function canCreateBooking(user: User, item: Item, isAvailable: boolean) {
   //only role check is borrower
   //1. admin overrule
   if(user.role === 'ADMIN') {
@@ -30,7 +30,7 @@ export function canCreateBooking(user: User, item: Item) {
     return{ allowed: false, message: " can't book your own item "}
   }
 
-  if(!item.available) {
+  if(!isAvailable) {
     return{ allowed: false, message: 'item is not available for booking'}
   }
   
@@ -61,23 +61,12 @@ export function canApproveBooking( user: User, item: Item, booking: Booking) {
 }
 //move from specific checks to broader checks
 
-export function canDeleteItem(user: User, item: Item) {
+export function canDeleteItem(user: User, item: Item, isAvailable: boolean) {
   // only owner and admin can delete an item.
   if(user.role === 'ADMIN') {
     return{ allowed: true }
   }
   
-  /*
-  if( user.role === 'owner' && item.ownerId !== user.id) { //specific check
-    return { allowed: false, message: 'can only delete if you are an owner and its your item'}
-  }
-  
-  if( user.role === 'owner') { //broad check
-    return{ allowed: true, message: 'can delete item'}
-  }
-  */
- 
-  //deny invalid case in this case borrower, returns false
   if(user.role !== 'OWNER') {
     return{ allowed: false, message: 'only owners can delete  items'}
   }
@@ -86,9 +75,23 @@ export function canDeleteItem(user: User, item: Item) {
     return { allowed: false, message: 'you can only delete your own item'}
   }
 
-  if(!item.available) {
+  if(!isAvailable) {
     return{ allowed: false, message: 'item is not available'}
   }
 
   return { allowed: true }
+   /*
+ if( user.role === 'owner' && item.ownerId !== user.id) { //
+specific check
+   return { allowed: false, message: 'can only delete if 
+you are an owner and its your item'}
+ }
+ 
+ if( user.role === 'owner') { //broad check
+   return{ allowed: true, message: 'can delete item'}
+ }
+ */
+ 
+
+ //deny invalid case in this case borrower, returns false
 }

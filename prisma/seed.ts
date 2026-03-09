@@ -31,7 +31,7 @@ async function main() {
 
   await prisma.item.upsert({
     where: { id: 1 },
-    update: { available: true },
+    update: {},
     create: {
       ownerId: alice.id,
       title: 'Electric drill',

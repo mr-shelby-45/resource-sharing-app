@@ -5,13 +5,16 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/items
+  url: http://localhost:3000/api/auth/login
+  headers:
+    - name: Content-Type
+      value: application/json
   body:
     type: json
     data: |-
       {
-        "title": "pressure washer",
-        "description": "Good condition, barely used"
+        "email": "mac@gmail.com",
+        "password": "pass234"
       }
   auth: inherit
 

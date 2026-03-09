@@ -46,8 +46,12 @@ export async function POST(request: Request) {
       {status: 404}
     )
   }
+  const hasApprovedBooking = await prisma.booking.findFirst({
+    where: { itemId: item.id, status: "APPROVED"}
+  })
+  const isAvailable = !hasApprovedBooking
   //Authorization code below, now done by permission.ts
-  const permission = canCreateBooking(currentUser, item)
+  const permission = canCreateBooking(currentUser, item, isAvailable)
 
   if(!permission.allowed) {
     return Response.json(
