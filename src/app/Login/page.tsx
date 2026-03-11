@@ -7,6 +7,7 @@ import LoginForm from "./Loginform"
 import { sign } from "jsonwebtoken"
 async function login(prevState: any,formData: FormData) {
   'use server'
+  //.get takes in the data entered
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   //retrieve user by their email
