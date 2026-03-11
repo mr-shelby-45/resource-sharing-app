@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       { status: 401 }
     )
   }
-  //comapare password from client, stored password
+  //compare password from client, stored password
   const isMatch =  await bcrypt.compare(password, user.password)
 
   if(!isMatch) {

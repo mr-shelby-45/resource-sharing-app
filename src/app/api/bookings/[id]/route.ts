@@ -90,7 +90,7 @@ export async function PATCH(
     })
   ])
 
-  return Response.json(updatedBooking, {status: 200})//sucess
+  return Response.json(updatedBooking, {status: 200})//success
 
   /*
   if(body.action === 'approve') {
