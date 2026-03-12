@@ -8,17 +8,19 @@ type Props = {
 
 export default  function BookingButton({ itemId }: Props) {
   async function handleBooking(){
-    await fetch('/api/bookings', {
+    const res = await fetch('/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        itemId,
-        borrowerId: 2,//temp hardcoded user for illustration
+        itemId
       })
     })
-
-    alert('Booking requested')
-
+    if(res.ok) {
+      alert('Booking requested successfully')
+    } else {
+      const data = await res.json()
+      alert(data.message)
+    }
   }
   return (
     <button onClick={handleBooking}>Request Booking</button>

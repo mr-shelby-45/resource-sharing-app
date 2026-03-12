@@ -11,13 +11,17 @@ type Props = {
 
 export default function BookingActions({ bookingId }: Props) {
   async function handleAction(action: 'approve' | 'reject') {
-    await fetch(`/api/bookings/${bookingId}`, {
+    const res = await fetch(`/api/bookings/${bookingId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action })
     })
-    //temporary refresh
-    window.location.reload()
+     if(res.ok) {
+      window.location.reload()
+     } else {
+      const data = await res.json()
+      alert(data.message)
+     }
   }
 
   return (

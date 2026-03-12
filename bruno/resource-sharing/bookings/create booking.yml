@@ -4,17 +4,14 @@ info:
   seq: 1
 
 http:
-  method: GET
-  url: http://localhost:3000/api/auth/me
+  method: PATCH
+  url: http://localhost:3000/api/bookings/6
+  headers:
+    - name: Content-Type
+      value: application/json
   body:
     type: json
-    data: |-
-      /*
-      {
-        "email": "alice@gmail.com",
-        "password": "password234"
-      }
-      */
+    data: '{ "action": "approve" }'
   auth: inherit
 
 settings:

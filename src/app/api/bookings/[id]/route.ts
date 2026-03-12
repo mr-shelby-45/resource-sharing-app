@@ -72,46 +72,61 @@ export async function PATCH(
     )
   }
   //change the status to approved, consequently its becomes unavailable.
-
-  const [ updatedBooking ] = await prisma.$transaction([
-    prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: 'APPROVED' }
-    }),
-    prisma.booking.updateMany({
-      where: {
-        itemId: item.id,
-        NOT: {
-          id: bookingId
+  const body = await request.json();
+  const { action } = body;
+  if(action === 'approve'){
+    const [ updatedBooking ] = await prisma.$transaction([
+      prisma.booking.update({
+        where: { id: bookingId },
+        data: { status: 'APPROVED' }
+      }),
+      prisma.booking.updateMany({
+        where: {
+          itemId: item.id,
+          NOT: {
+            id: bookingId
+          },
+          status: 'PENDING'
         },
-        status: 'PENDING'
-      },
+        data: { status: 'REJECTED' }
+      })
+    ])
+    return Response.json(updatedBooking, {status: 200})//success
+  }
+  
+  if(action === 'reject') {
+    const rejectedBooking = await prisma.booking.update({
+      where: { id: bookingId },
       data: { status: 'REJECTED' }
     })
-  ])
-
-  return Response.json(updatedBooking, {status: 200})//success
-
-  /*
-  if(body.action === 'approve') {
-    booking.status = 'approved'
-    //check if the borrower owns the item they are trying to borrow
-    const item = items.find(i => i.id === booking.itemId)
-    
-    if (item?.ownerId !== currentUser.id) {
-      return Response.json({ message: 'Forbidden' },{ status: 403})
-    }
-    
-    
-    //other pending bookings for same item
-
-    bookings.forEach(b => {
-      if (
-        b.itemId === booking.itemId && b.id !== booking.id && b.status === 'pending' 
-      ) {
-        b.status = 'rejected'
-      }
-    })
+    return Response.json(rejectedBooking, { status: 200 })
   }
-  */
+return Response.json(
+  { message: 'Invalid action'},
+  { status: 400 }
+)
 }
+/*
+if(body.action === 'approve') {
+  booking.status = 'approved'
+  //check if the borrower owns the item they are trying to
+borrow
+  const item = items.find(i => i.id === booking.itemId)
+  
+  if (item?.ownerId !== currentUser.id) {
+    return Response.json({ message: 'Forbidden' },{ 
+status: 403})
+  }
+  
+  
+  //other pending bookings for same item
+  bookings.forEach(b => {
+    if (
+      b.itemId === booking.itemId && b.id !== booking.
+id && b.status === 'pending' 
+    ) {
+      b.status = 'rejected'
+    }
+  })
+}
+*/
