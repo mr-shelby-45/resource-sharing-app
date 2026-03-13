@@ -106,27 +106,3 @@ return Response.json(
   { status: 400 }
 )
 }
-/*
-if(body.action === 'approve') {
-  booking.status = 'approved'
-  //check if the borrower owns the item they are trying to
-borrow
-  const item = items.find(i => i.id === booking.itemId)
-  
-  if (item?.ownerId !== currentUser.id) {
-    return Response.json({ message: 'Forbidden' },{ 
-status: 403})
-  }
-  
-  
-  //other pending bookings for same item
-  bookings.forEach(b => {
-    if (
-      b.itemId === booking.itemId && b.id !== booking.
-id && b.status === 'pending' 
-    ) {
-      b.status = 'rejected'
-    }
-  })
-}
-*/
