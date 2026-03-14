@@ -7,14 +7,14 @@ export default async function HomePage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('token')?.value
 
-  if(!token) redirect('/Login')
+  if(!token) redirect('/login')
   
   try {
     const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string }
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId}
     })
-    if(!user) redirect('/Login')
+    if(!user) redirect('/login')
     
     if(user.role === 'OWNER') {
       const items = await prisma.item.findMany({
@@ -78,7 +78,7 @@ export default async function HomePage() {
       )
     }
   } catch {
-    redirect('/Login')
+    redirect('/login')
   }
 
 }
