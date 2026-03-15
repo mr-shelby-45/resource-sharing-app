@@ -15,6 +15,6 @@ export default function LogoutButton() {
     }
   }
   return (
-    <button onClick={handleLogout}>Log out</button>
+    <button onClick={handleLogout} className="btn-outline" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Log out</button>
   )
 }

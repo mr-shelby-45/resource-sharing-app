@@ -7,7 +7,7 @@ import BookingActions from './BookingActions'
 export default async function BookingsPage() {
   const bookings = await prisma.booking.findMany({
     include: {
-      item: true //alongside fetching the booking(has an itemId property already), also fetch the item object(includes item's id,title,desccription and avilability)
+      item: true //alongside fetching the booking(has an itemId relation in the schema), also fetch the item object(includes item's id,title,desccription and avilability)
     }
   })
   return (

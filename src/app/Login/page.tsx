@@ -41,7 +41,7 @@ async function login(prevState: any,formData: FormData) {
 //exports to the client component
 export default function loginPage() {
   return (
-    <div>
+    <div className="page">
       <h1>Login</h1>
       <LoginForm action={login}/>
     </div>

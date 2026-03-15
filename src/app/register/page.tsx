@@ -53,7 +53,7 @@ async function register(prevState: any, formData: FormData) {
 //<!--react elements have to be uppercase -->
 export default function registrationPage() {
   return (
-    <div>
+    <div className="page">
       <h1>Register</h1>
       <RegistrationForm action={register}/>
     </div>
