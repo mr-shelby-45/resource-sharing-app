@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Resource Sharing Platform
+
+A peer-to-peer community resource sharing platform built for modern planned communities like Konza City and Tatu City in Kenya, starting with item lending and expanding towards a full community resource exchange including skills and professional services.
+
+## The Problem
+
+Rapid urbanisation is driving the growth of large, planned satellite cities, masterplanned communities where thousands of people live in close proximity but don't necessarily know or trust each other. One of the underutilised advantages of dense communities is the ability to pool resources, not just physical items, but human expertise. A community of thousands likely has electricians, lawyers, doctors, mechanics, and chefs living within walking distance of each other, with no structured way to connect.
+
+Currently, informal resource sharing relies on WhatsApp groups, word of mouth, and personal trust networks, with no structured way to track who borrowed what, manage availability, verify community membership, or handle disputes.
+
+## The Solution
+
+This platform introduces a structured, trust-based resource sharing system for communities. In its current phase, residents can list items they own, make them available for borrowing, and manage requests through a controlled approval workflow. The architecture is designed from the ground up to evolve, the same booking, permissions, and trust infrastructure that manages item lending will extend naturally to skill and service listings, community verification, and eventually payments.
+
+## Tech Stack
+
+- Next.js 15, full-stack framework with App Router, server components, and server actions
+- TypeScript, strict typing for safer permission logic and data contracts
+- PostgreSQL (Neon), relational database with ACID compliance for transactional integrity
+- Prisma 7, type-safe ORM with migrations and relation management
+- JWT with HTTP-only cookies, stateless authentication resistant to XSS attacks
+- bcryptjs, password hashing
+
+## Architecture Decisions
+
+**Modular monolith over microservices** — financial transactions require strong consistency. A single database with ACID transactions is simpler to reason about and debug than distributed systems.
+
+**Derived availability over stored boolean** — item availability is computed from approved bookings rather than stored as a separate field. This prevents synchronisation bugs and maintains a single source of truth.
+
+**Separated auth and authorisation** — requireAuth only verifies identity. Permission functions handle capability checks separately. Changing the auth mechanism does not affect business logic.
+
+**Extracted permission layer** — role and ownership checks live in src/lib/permissions.ts rather than inside route handlers. This makes rules reusable, testable, and easy to audit.
+
+**Database-level constraints** — a partial unique index prevents two approved bookings for the same item even if application logic is bypassed.
+
+**Transactions for booking approval** — approving a booking, rejecting competing bookings, and updating availability happen atomically. Either all succeed or none do.
+
+## Current Features
+
+- User registration and login with JWT authentication
+- Role-based access, owners, borrowers, admins
+- Item listing, creation, and deletion
+- Booking requests, approval, and rejection
+- Automatic rejection of competing bookings on approval
+- Availability derived from booking state
+- Owner dashboard with pending booking requests
+- Borrower dashboard with available items and booking history
+
+## Expected Features
+
+- Skill sharing, extend the platform beyond physical items to human resources. Community members can list professional skills including IT, legal, medical, culinary, and mechanical services, making expertise accessible within the community at agreed rates or through a barter system
+- Payment integration for security deposits, lending fees, and service payments
+- Reputation and trust scoring based on borrowing and service history
+- Location-based discovery within communities
+- Community verification, ensuring only verified residents can access the platform
+- Notifications for booking requests and approvals
+- Admin dashboard for community managers
+- Multi-community support, one platform serving multiple satellite cities
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- A Neon account or any PostgreSQL database
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Clone the repository and install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    git clone https://github.com/yourusername/resource-sharing
+    cd resource-sharing
+    npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy the environment variables:
 
-## Learn More
+    cp .env.example .env
 
-To learn more about Next.js, take a look at the following resources:
+Fill in your values in .env, then run migrations and seed:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    npx prisma migrate dev
+    npx prisma db seed
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Start the development server:
 
-## Deploy on Vercel
+    npm run dev
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Reference
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | /api/auth/register | Register a new user | No |
+| POST | /api/auth/login | Login | No |
+| POST | /api/auth/logout | Logout | No |
+| GET | /api/auth/me | Get current user | Yes |
+| GET | /api/items | Get all items | No |
+| POST | /api/items | Create an item | Owner |
+| DELETE | /api/items/:id | Delete an item | Owner |
+| GET | /api/bookings | Get all bookings | Yes |
+| POST | /api/bookings | Create a booking | Borrower |
+| PATCH | /api/bookings/:id | Approve or reject booking | Owner |

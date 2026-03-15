@@ -4,14 +4,22 @@ info:
   seq: 1
 
 http:
-  method: PATCH
-  url: http://localhost:3000/api/bookings/6
+  method: POST
+  url: http://localhost:3000/api/bookings/
   headers:
     - name: Content-Type
       value: application/json
   body:
     type: json
-    data: '{ "action": "approve" }'
+    data: |-
+      /*{
+        "email": "mac@gmail.com",
+        "password": "pass234"
+      }
+      */
+      {
+        "itemId": 4
+      }
   auth: inherit
 
 settings:
