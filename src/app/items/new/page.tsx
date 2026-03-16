@@ -11,6 +11,7 @@ import { cookies } from 'next/headers'
   const cookiesStore = await cookies()
   const token = cookiesStore.get('token')?.value
   //api checks the permission,auth, duplicate items and adds the new item to db
+  //calls the item's api instead of duplicating code
   const res = await fetch('http://localhost:3000/api/items', {
     method: 'POST',
     headers: {
@@ -26,11 +27,9 @@ import { cookies } from 'next/headers'
     return { error: data.message }
   }
 }
-
 export default function addItemPage() {
-  return(
-    <div>
-      <h1>Add a new Item</h1>
+  return (
+    <div className="page">
       <ItemForm action={addItem} />
     </div>
   )

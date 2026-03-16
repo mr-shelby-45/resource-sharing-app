@@ -5,7 +5,7 @@
 type Props = {
   itemId: number
 }
-
+//fetches a booking by their id and request a booking , itemId gotten from the booking
 export default  function BookingButton({ itemId }: Props) {
   async function handleBooking(){
     const res = await fetch('/api/bookings', {
@@ -23,6 +23,9 @@ export default  function BookingButton({ itemId }: Props) {
     }
   }
   return (
-    <button onClick={handleBooking}>Request Booking</button>
+    <button onClick={handleBooking} className="btn-accent" style={{ width: '100%', padding: '10px' }}>
+      Request Booking
+    </button>
   )
+  
 }

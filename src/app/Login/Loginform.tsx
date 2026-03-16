@@ -12,11 +12,15 @@ export default function LoginForm({ action }: Props) {
     <div style={{
       minHeight: 'calc(100vh - 64px)',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
       padding: '24px'
     }}>
-      <div className="card" style={{ width: '100%', maxWidth: '420px' }}>
+      <div className="card" 
+      style={{ 
+        width: '100%', 
+        maxWidth: '420px' 
+      }}>
         <h1 style={{ marginBottom: '8px' }}>Welcome back</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '0.95rem' }}>
           Sign in to your Jirani account

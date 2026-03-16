@@ -25,9 +25,13 @@ export default function BookingActions({ bookingId }: Props) {
   }
 
   return (
-    <div>
-      <button onClick={() => handleAction('approve')}>Approve</button>
-      <button onClick={() => handleAction('reject')}>Reject</button>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <button onClick={() => handleAction('approve')} className="btn-primary" style={{ padding: '8px 16px', fontSize:   '0.9rem' }}>
+        Approve
+      </button>
+      <button onClick={() => handleAction('reject')} className="btn-danger" style={{ padding: '8px 16px', fontSize:   '0.9rem' }}>
+        Reject
+      </button>
     </div>
   )
 }

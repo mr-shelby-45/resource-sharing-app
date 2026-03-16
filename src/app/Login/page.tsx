@@ -42,7 +42,21 @@ async function login(prevState: any,formData: FormData) {
 export default function loginPage() {
   return (
     <div className="page">
-      <h1>Login</h1>
+      <h1 style={{
+        marginBottom: '8px'
+      }}>Jirani</h1>
+      <p style={{ 
+        color: 'var(--text-muted)',
+        marginBottom: '24px', 
+        fontSize: '0.95rem' 
+        }}>
+          Community resource sharing platform
+        </p>
+      <hr style={{ 
+        border: 'none', 
+        borderTop: '1px solid var(--border)', 
+        marginBottom: '32px' 
+      }} />
       <LoginForm action={login}/>
     </div>
   )

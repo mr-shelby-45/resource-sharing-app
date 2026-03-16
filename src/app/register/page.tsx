@@ -54,8 +54,16 @@ async function register(prevState: any, formData: FormData) {
 export default function registrationPage() {
   return (
     <div className="page">
-      <h1>Register</h1>
-      <RegistrationForm action={register}/>
+      <h1 style={{ marginBottom: '8px' }}>Jirani</h1>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.95rem' }}>
+        Community resource sharing platform
+      </p>
+      <hr style={{ 
+        border: 'none', 
+        borderTop: '1px solid var(--border)', 
+        marginBottom: '32px' 
+      }} />
+      <RegistrationForm action={register} />
     </div>
   )
 }

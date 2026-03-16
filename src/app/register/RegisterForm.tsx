@@ -18,9 +18,7 @@ export default function RegistrationForm( { action } : Props) {
       <div className="card" 
       style={{ 
         width: "100%", 
-        maxWidth: '420px',
-        maxHeight: 'calc(100vh - 120px)',
-        overflowY: 'auto'
+        maxWidth: '420px'
         }}>
         <h1 style={{ marginBottom: '8px' }}>Welcome to Jirani</h1>
         <p style={{ color: "var(--text-muted)", marginBottom: '32px', fontSize: '0.95rem' }}>
@@ -75,7 +73,7 @@ export default function RegistrationForm( { action } : Props) {
             Register
           </button>
           <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            Have an account? Sign in instead <a href="/login" style={{ color: 'var(--primary)', fontWeight: '500' }}
+            Have an account? Sign in instead  <a href="/login" style={{ color: 'var(--primary)', fontWeight: '500' }}
           >Sign in</a>
           </p>
         </form>

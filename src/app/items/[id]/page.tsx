@@ -17,19 +17,42 @@ export default async function ItemDetailPage ({ params }: { params: Promise<{ id
   })
   //check for null first, code below does not run 
   if(!item) {
-    return <div>Item not found</div>
+    return (
+      <div className="page" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Item not found</p>
+        <a href="/" style={{ color: 'var(--primary)', fontWeight: '500', marginTop: '16px', display: 'inline-block' }}>
+          Back to dashboard
+        </a>
+      </div>
+    )
   }
   // item.bookings only contains APPROVED bookings (filtered in the query above)
   // if the array is empty (length === 0), no one has an approved booking → item is available
   // if the array has 1 entry, someone already has an approved booking → item is taken
   const isAvailable = item.bookings.length === 0
-  return(
-    <div>
-      <h1>{item.title}</h1>
-      <p>{item.description}</p>
-      <p>Status: {isAvailable ? 'Available' : 'Not available'}</p>
 
-      { isAvailable && <BookingButton itemId={item.id} />}
+  return(
+    <div className="page" style={{ maxWidth: '600px' }}>
+      <a href="/" style={{ 
+        color: 'var(--text-muted)', 
+        fontSize: '0.9rem', 
+        display: 'inline-block',
+        marginBottom: '24px'
+      }}>
+        ← Back
+      </a>
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <h1 style={{ fontSize: '1.6rem' }}>{item.title}</h1>
+          <span className={`badge ${isAvailable ? 'badge-available' : 'badge-booked'}`}>
+            {isAvailable ? 'Available' : 'Not available'}
+          </span>
+        </div>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.7' }}>
+          {item.description}
+        </p>
+        { isAvailable && <BookingButton itemId={item.id} />}
+      </div>
     </div>
   )
 }
