@@ -6,6 +6,7 @@ import BookingActions from './bookings/BookingActions'
 import BookingButton from './items/[id]/BookingButton'
 
 export default async function HomePage() {
+  //cookies are not manually forwarded.
   const cookieStore = await cookies()
   const token = cookieStore.get('token')?.value
 
@@ -13,18 +14,21 @@ export default async function HomePage() {
   
   try {
     const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string }
+    //confirm if the user exists in the database with the decoded userId from the cookie
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId }
     })
     if(!user) redirect('/login')
     
     if(user.role === 'OWNER') {
+      //get all the items with the associated confirmed userId & whose booking status is approved
       const items = await prisma.item.findMany({
         where: { ownerId: decoded.userId },
         include: {
           bookings: { where: { status: "APPROVED" } }
         }
       })
+      //get all booked items, waiting for approval or rejection
       const bookedItems = await prisma.booking.findMany({
         where: {
           status: 'PENDING',
@@ -32,7 +36,10 @@ export default async function HomePage() {
         },
         include: { item: true, borrower: true }
       })
-
+      //owners
+      //ternary operator to check if the returned array from the db is null or there are react elements to render
+      //{/*add a new item if there are no items yet*/}
+      //displays all items their own showing if the item is booked or otherwise
       return (
         <div className="page">
           <div style={{ marginBottom: '32px' }}>
@@ -40,6 +47,15 @@ export default async function HomePage() {
             <p style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
               Manage your items and booking requests
             </p>
+            <a href="/items" style={{ 
+              display: 'inline-block',
+              marginTop: '12px',
+              color: 'var(--primary)',
+              fontWeight: '500',
+              fontSize: '0.95rem'
+            }}>
+              Browse all community items →
+            </a>
           </div>
 
           <section style={{ marginBottom: '48px' }}>
@@ -73,7 +89,7 @@ export default async function HomePage() {
               )
             }
           </section>
-
+            {/*display all the pending requests and the borrower's details */}
           <section>
             <h2 style={{ marginBottom: '20px' }}>Pending Requests</h2>
             {bookedItems.length === 0
@@ -115,11 +131,14 @@ export default async function HomePage() {
     }
 
     if(user.role === 'BORROWER') {
+      //confirm their role as a borrower from the database
+      //gets all the available items, by filtering items whose status is 'approved'
       const items = await prisma.item.findMany({
         where: {
           bookings: { none: { status: "APPROVED" } }
         }
       })
+      //gets all the bookings made by the borrower signed in
       const bookings = await prisma.booking.findMany({
         where: { borrowerId: decoded.userId },
         include: { item: true }
@@ -132,6 +151,15 @@ export default async function HomePage() {
             <p style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
               Browse available items and track your bookings
             </p>
+            <a href="/items" style={{ 
+              display: 'inline-block',
+              marginTop: '12px',
+              color: 'var(--primary)',
+              fontWeight: '500',
+              fontSize: '0.95rem'
+            }}>
+              Browse all community items →
+            </a>
           </div>
 
           <section style={{ marginBottom: '48px' }}>
