@@ -12,7 +12,7 @@ import { cookies } from 'next/headers'
   const token = cookiesStore.get('token')?.value
   //api checks the permission,auth, duplicate items and adds the new item to db
   //calls the item's api instead of duplicating code
-  const res = await fetch('http://localhost:3000/api/items', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
