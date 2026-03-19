@@ -1,5 +1,7 @@
 # Resource Sharing Platform
 
+🌐 **Live:** https://resource-sharing-app-2jp6-1idct30ac-mr-shelby-45s-projects.vercel.app/login
+
 A peer-to-peer community resource sharing platform built for modern planned communities like Konza City and Tatu City in Kenya, starting with item lending and expanding towards a full community resource exchange including skills and professional services.
 
 ## The Problem
@@ -67,7 +69,7 @@ This platform introduces a structured, trust-based resource sharing system for c
 
 Clone the repository and install dependencies:
 
-    git clone https://github.com/yourusername/resource-sharing
+    git clone https://github.com/mr-shelby-45/resource-sharing-app.git
     cd resource-sharing
     npm install
 
