@@ -1,6 +1,6 @@
 # Resource Sharing Platform
 
-🌐 **Live:** https://resource-sharing-app-2jp6-1idct30ac-mr-shelby-45s-projects.vercel.app/login
+🌐 **Live:** https://resource-sharing-app-2jp6.vercel.app/login
 
 A peer-to-peer community resource sharing platform built for modern planned communities like Konza City and Tatu City in Kenya, starting with item lending and expanding towards a full community resource exchange including skills and professional services.
 
