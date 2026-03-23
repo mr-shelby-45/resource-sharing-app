@@ -30,35 +30,35 @@ export default function RegistrationForm( { action } : Props) {
             fontWeight: '500' }}>
               Name
             </label>
-            <input name="name" type="name" placeholder="Name"/>
+            <input name="name" type="name" placeholder="Name" required/>
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
             fontWeight: '500' }}>
               Email
             </label>
-            <input name="email" type="email" placeholder="Email"/>
+            <input name="email" type="email" placeholder="Email" required/>
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
               fontWeight: '500' }}>
                 Phone
               </label>
-            <input name="phone" type="text" placeholder="Phone"/>
+            <input name="phone" type="text" placeholder="Phone" required/>
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
             fontWeight: '500' }}>
               Password
             </label>
-            <input name="password" type="password" placeholder="Password"/>
+            <input name="password" type="password" placeholder="Password" required/>
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
             fontWeight: '500' }}>
               Choose a role e.g Owner to add an item for booking, Borrower to borrow an item
             </label>
-            <select name="role">
+            <select name="role" required>
               <option value={'OWNER'}>Owner</option>
               <option value={'BORROWER'}>Borrower</option>  
             </select>

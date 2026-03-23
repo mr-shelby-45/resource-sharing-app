@@ -31,14 +31,14 @@ export default function LoginForm({ action }: Props) {
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '500' }}>
               Email
             </label>
-            <input name="email" type="email" placeholder="you@example.com" />
+            <input name="email" type="email" placeholder="you@example.com" required/>
           </div>
 
           <div>
             <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '500' }}>
               Password
             </label>
-            <input name="password" type="password" placeholder="Your password" />
+            <input name="password" type="password" placeholder="Your password" required/>
           </div>
 
           {state?.error && (

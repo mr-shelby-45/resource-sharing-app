@@ -1,54 +1,34 @@
 import { redirect } from "next/navigation"
-import { cookies } from 'next/headers'
-import { prisma } from "@/lib/prisma"
-import { sign } from "jsonwebtoken"
-import { hash } from 'bcryptjs'
 import RegistrationForm from "./RegisterForm"
+import { registerUser } from "@/services/authServices"
+import { signToken } from "@/lib/auth"
+import { cookies } from "next/headers"
 
 async function register(prevState: any, formData: FormData) {
   'use server'
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
-  const phone = formData.get('phone') as string
-  const password = formData.get('password') as string
-  const role = formData.get('role')  as 'OWNER' | 'BORROWER'
-
-  //Check if the user is already registered by the email entered
-  const user = await prisma.user.findUnique({
-    where: { email }
-  })
-  //throw an error if the account already exist
-  if(user) {
-    return { error: 'Account already exist'}
-  }
-  //hash the password entered
-  const hashedPassword = await hash(`${password}`, 10)
-  //add the users data to the database
-  const newUser = await prisma.user.create({
-    data: {
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      role
+  try {
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const phone = formData.get('phone') as string
+    const password = formData.get('password') as string
+    const role = formData.get('role')  as 'OWNER' | 'BORROWER'
+    if(!name ||!email || !phone || !password || !role) {
+    return { error: "All fields are required!"}
     }
-  })
-  //sign the token with the JWT secret
-  const token = sign(
-    {userId: newUser.id, role: newUser.role },
-    process.env.JWT_SECRET!,
-    {expiresIn: '7d'}
-  )
-  //set the cookie 
-  const cookiesStore = await cookies()
-  cookiesStore.set('token', token, {
-    httpOnly: true,
-    path: '/',
-    maxAge: 604800,
-    sameSite: 'strict'
-  })
-  //on successful reg redirect to the homepage
-  redirect('/')
+    const user = await registerUser(name, email, phone, password, role)
+    const signedToken = signToken(user.id, user.role)
+    const cookiesStore = await cookies()
+    cookiesStore.set('token', signedToken, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 604800,
+      sameSite: 'strict'
+    })
+    //on successful reg redirect to the homepage
+    redirect('/')
+  } catch(error) {
+    return { error: error instanceof Error ? error.message: 'Registration failed' }
+  }
 }
 //<!--react elements have to be uppercase -->
 export default function registrationPage() {

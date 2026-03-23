@@ -1,7 +1,16 @@
 //this is the authorization infrastructure that will be swapped out for middleware 
 //this will run first before the api routes, extract identity from the header(that's from the browser)
 //evaluate that identity if it exists, either return an authenticated user or an error message
-import { verify } from "jsonwebtoken"
+import { verify, sign } from "jsonwebtoken"
+import { Role } from "@/generated/prisma/enums"
+
+export function signToken(userId: number, role: Role): string {
+  return sign(
+    { userId, role }, 
+    process.env.JWT_SECRET!, 
+    { expiresIn: '7d' }
+  )
+}
 
 type AuthSuccess = {
   userId: number

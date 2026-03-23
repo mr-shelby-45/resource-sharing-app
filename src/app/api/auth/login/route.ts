@@ -1,46 +1,31 @@
-import { prisma } from "@/lib/prisma"
-import bcrypt from "bcryptjs"
-import { sign } from "jsonwebtoken"
+import { loginUser } from "@/services/authServices"
+import { signToken } from "@/lib/auth"
 
 export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    //destructure email and password from the body
+    const { email, password } = body;
+    //authServices logins the user
+    const user = await loginUser(email, password)
+    //signs the cookie
+    const signedToken = signToken(user.id, user.role)
+    const response = Response.json(
+      { message: 'Login successful'},
+      { status: 200 }
+    )
+    response.headers.set(
+      'Set-Cookie' , `token=${signedToken}; HttpOnly; Path/=; 
+    Max-Age=604800; SameSite=Strict`
+    )
+    return response
+  } catch(error : any) {
+    console.log("Auth error :",  error.message )
 
-  const body = await request.json()
-  const { email, password } = body;
-  //fetch user from db by email
-  const user = await prisma.user.findUnique({
-    where: { email }
-  })
-  //email does not exist
-  if(!user) {
+    const status = error.message === "Invalid credentials" ? 404 : 500
     return Response.json(
-      { message: 'Invalid credentials'},
-      { status: 401 }
+      {message: error.message || 'Internal server error'},
+      { status }
     )
   }
-  //compare password from client, stored password
-  const isMatch =  await bcrypt.compare(password, user.password)
-
-  if(!isMatch) {
-    return Response.json(
-      { message: 'Invalid credentials' },
-      { status: 401 }
-    )
-  } 
-
-  const token = sign(
-    { userId: user.id, role: user.role },
-    process.env.JWT_SECRET!,
-    { expiresIn: '7d'}
-  )
-
-  const response = Response.json(
-    { message: 'Login successful'},
-    { status: 201 }
-  )
-
-  response.headers.set(
-    'Set-Cookie' , `token=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict`
-  )
-
-  return response
 }

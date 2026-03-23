@@ -39,7 +39,7 @@ export default function ItemForm({ action }: Props) {
               placeholder="Condition, any usage notes, pickup instructions..."
               rows={4}
               style={{ resize: 'vertical' }}
-            />
+            required/>
           </div>
 
           {state?.error && (
