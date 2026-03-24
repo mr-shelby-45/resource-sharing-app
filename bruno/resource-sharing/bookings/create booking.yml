@@ -5,20 +5,19 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/api/bookings/
+  url: http://localhost:3000/api/auth/register
   headers:
     - name: Content-Type
       value: application/json
   body:
     type: json
     data: |-
-      /*{
-        "email": "mac@gmail.com",
-        "password": "pass234"
-      }
-      */
       {
-        "itemId": 4
+        "name": "Thomas",
+        "phone": "0798456654",
+        "email": "thomas@gmail.com",
+        "role": "OWNER",
+        "password": "word234"
       }
   auth: inherit
 

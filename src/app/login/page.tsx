@@ -24,10 +24,11 @@ async function login(prevState: any,formData: FormData) {
       maxAge: 604800,
       sameSite: 'strict'
     })
-    redirect('/')
   } catch(error) {
     return { error: error instanceof Error ? error.message : 'Log in failed' }
   }
+  //on successful reg redirect to the homepage
+  redirect('/')
 }
 //Server Actions in Next.js have a specific contract: they either return nothing or return serializable data, but they cannot return Response objects.
 //exports to the client component

@@ -24,11 +24,11 @@ async function register(prevState: any, formData: FormData) {
       maxAge: 604800,
       sameSite: 'strict'
     })
-    //on successful reg redirect to the homepage
-    redirect('/')
   } catch(error) {
     return { error: error instanceof Error ? error.message: 'Registration failed' }
   }
+  //on successful reg redirect to the homepage
+  redirect('/')
 }
 //<!--react elements have to be uppercase -->
 export default function registrationPage() {
