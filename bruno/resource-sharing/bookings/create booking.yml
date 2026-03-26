@@ -4,21 +4,14 @@ info:
   seq: 1
 
 http:
-  method: POST
-  url: http://localhost:3000/api/auth/register
+  method: DELETE
+  url: http://localhost:3000/api/items/15
   headers:
     - name: Content-Type
       value: application/json
   body:
     type: json
-    data: |-
-      {
-        "name": "Thomas",
-        "phone": "0798456654",
-        "email": "thomas@gmail.com",
-        "role": "OWNER",
-        "password": "word234"
-      }
+    data: ""
   auth: inherit
 
 settings:

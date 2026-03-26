@@ -29,7 +29,7 @@ export function requireAuth(
     ?.split(';')
     .find(c => c.trim().startsWith('token'))
     ?.split('=')[1]
-
+  
   if(!token) {
     return { error: 'Unauthorized', status: 401 }
   }

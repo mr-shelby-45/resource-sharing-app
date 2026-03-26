@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     )
     response.headers.set(
       'Set-Cookie' , 
-      `token=${signedToken}; HttpOnly; Path/=; Max-Age=604800; SameSite=Strict`)
+      `token=${signedToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict`)
     return response
   } catch(error : any) {
     console.log("Auth error :",  error.message )

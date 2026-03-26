@@ -4,6 +4,7 @@ import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import BookingActions from './bookings/BookingActions'
 import BookingButton from './items/[id]/BookingButton'
+import DeleteButtonClient from './items/[id]/DeleteClient'
 
 export default async function HomePage() {
   //cookies are not manually forwarded.
@@ -81,7 +82,9 @@ export default async function HomePage() {
                             {isBooked ? 'Booked' : 'Available'}
                           </span>
                         </div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}
+                        </p>
+                        <DeleteButtonClient itemId={item.id}/>
                       </div>
                     )
                   })}

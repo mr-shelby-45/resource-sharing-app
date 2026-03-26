@@ -76,7 +76,7 @@ export function canDeleteItem(user: User, item: Item, isAvailable: boolean) {
   }
 
   if(!isAvailable) {
-    return{ allowed: false, message: 'item is not available'}
+    return{ allowed: false, message: 'Cannot delete a booked item '}
   }
 
   return { allowed: true }
