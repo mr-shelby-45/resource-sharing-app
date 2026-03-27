@@ -1,7 +1,7 @@
 //find booking by id,change status to approved,set item.available to FALSE, Reject other bookings for the same item by owner
-import { canApproveBooking } from '@/lib/permissions'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { approveBooking } from '@/services/bookingServices'
 /*
 type Props = {
   params: { id: string }
@@ -11,98 +11,39 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> } // or : Props
 ) {
-  const auth = requireAuth(request)
-  if('error' in auth) {
-    return Response.json (
-      { message: auth.error},
-      { status: auth.status} 
-    )
-  }
-
-  const currentUser = await prisma.user.findUnique({
-    where: { id: auth.userId}
-  })
-
-  if(!currentUser) {
-    return Response.json(
-      { message: 'user not found' },
-      { status: 404 }
-    )
-  }
-
-
-  /*
-  finding booking by id from the simulated db by importing bookings from the data.ts
-  const booking = bookings.find(b => b.id === bookingId)
-  //check if the booking is available for approval
-  */
-  const { id } = await params
-  const bookingId = Number(id)
-
-  const booking = await prisma.booking.findUnique({
-    where: { id: bookingId }
-  })
-  //booking is an object
-  if(!booking) {
-    return Response.json(
-      { message: 'Booking not found' },
-      { status: 404 }
-    )
-  }
-  /*
-  //find the item related to that booking
-  const item = items.find(i => i.id === booking.itemId)
-  */
-  const item = await prisma.item.findUnique({
-    where: { id: booking.itemId }
-  })
-
-  if(!item) {
-    return Response.json (
-      { message: 'associated item has not been found' },
-      { status: 404 }
-    )
-  }
-  const permission = canApproveBooking(currentUser, item, booking)//shld be in that order currentUser,item,booking.
-
-  if(!permission.allowed) {
-    return Response.json (
-      { message: permission.message },
-      { status: 403}
-    )
-  }
-  //change the status to approved, consequently its becomes unavailable.
-  const body = await request.json();
-  const { action } = body;
-  if(action === 'approve'){
-    const [ updatedBooking ] = await prisma.$transaction([
-      prisma.booking.update({
-        where: { id: bookingId },
-        data: { status: 'APPROVED' }
-      }),
-      prisma.booking.updateMany({
-        where: {
-          itemId: item.id,
-          NOT: {
-            id: bookingId
-          },
-          status: 'PENDING'
-        },
-        data: { status: 'REJECTED' }
-      })
-    ])
-    return Response.json(updatedBooking, {status: 200})//success
-  }
-  
-  if(action === 'reject') {
-    const rejectedBooking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: 'REJECTED' }
+  try {
+    //requireAuth returns a userId on success/ error and status on failure
+    const auth = requireAuth(request)
+    if('error' in auth) {
+      return Response.json (
+        { message: auth.error},
+        { status: auth.status} 
+      )
+    }
+    //get the user by their userID 
+    const currentUser = await prisma.user.findUnique({
+      where: { id: auth.userId}
     })
-    return Response.json(rejectedBooking, { status: 200 })
+    //handles null
+    if(!currentUser) {
+      return Response.json(
+        { message: 'user not found' },
+        { status: 404 }
+      )
+    }
+    const { id } = await params
+    const bookingId = Number(id)
+    const body = await request.json() as { action: string }
+    const { action } = body
+
+    const booked = await approveBooking(currentUser, bookingId, action)
+    return Response.json( booked, { status: 201})
+
+  } catch(error: any) {
+    console.error("Booking error:", error)
+    return Response.json(
+      { message: error.message || "An unexpected error occurred"},
+      { status: 500 }
+    )
   }
-return Response.json(
-  { message: 'Invalid action'},
-  { status: 400 }
-)
 }
