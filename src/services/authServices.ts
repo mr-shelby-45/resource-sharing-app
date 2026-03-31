@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import bcrypt, { hash } from 'bcryptjs'
-import { Role } from '@/generated/prisma/enums'
 
-export async function registerUser(name: string, email: string, phone: string, password: string, role: Role) {
+export async function registerUser(name: string, email: string, phone: string, password: string) {
   const user = await prisma.user.findUnique({
     where: { email }
   })
@@ -18,13 +17,11 @@ export async function registerUser(name: string, email: string, phone: string, p
       name,
       email,
       phone,
-      password: hashedPassword,
-      role
+      password: hashedPassword
     }
   })
   const regUser = {
-    id: newUser.id,
-    role: newUser.role
+    id: newUser.id
   }
   return(regUser)
 }
@@ -43,8 +40,7 @@ export async function loginUser(email: string, password: string) {
     throw new Error('Invalid credentials')
   }
   const loggedIn = {
-    id: user.id,
-    role: user.role
+    id: user.id
   }
   return(loggedIn)
 }

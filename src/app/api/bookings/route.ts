@@ -26,8 +26,8 @@ export async function POST(request: Request) {
     }
 
     const currentUser = user
-    //2. authorization(check the role of the authenticated user)
-    if(currentUser.role !== 'BORROWER') {
+    //2. check if they are eligible to borrow
+    if(!currentUser.canBorrow) {
       return Response.json (
         { message: 'Forbidden' },
         { status: 403 }

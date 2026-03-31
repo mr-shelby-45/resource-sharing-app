@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     //authServices logins the user
     const user = await loginUser(email, password)
     //signs the cookie
-    const signedToken = signToken(user.id, user.role)
+    const signedToken = signToken(user.id)
     const response = Response.json(
       { message: 'Login successful'},
       { status: 200 }

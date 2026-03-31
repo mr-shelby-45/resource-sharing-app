@@ -20,8 +20,20 @@ export default async function HomePage() {
       where: { id: decoded.userId }
     })
     if(!user) redirect('/login')
+
+    if(!user.canBorrow && !user.canList) {
+      return(
+        <div className='page'>
+          <div>
+            <h1>Hey, {user.name}</h1>
+            <p style={{ color: 'var(--text-muted)', marginTop: '6px'}}> You have been banned from this website </p>
+            <p style={{ color: 'var(--text-muted)', marginTop: '6px'}}> Contact admin </p>
+          </div>
+        </div>
+      )
+    }
     
-    if(user.role === 'OWNER') {
+    if(user.canList) {
       //get all the items with the associated confirmed userId & whose booking status is approved
       const items = await prisma.item.findMany({
         where: { ownerId: decoded.userId },
@@ -36,6 +48,18 @@ export default async function HomePage() {
           item: { ownerId: decoded.userId }
         },
         include: { item: true, borrower: true }
+      })
+      //owner's can now book
+      const bookings = await prisma.booking.findMany({
+        where: { borrowerId: decoded.userId },
+        include: { item: true }
+      })
+
+      const itemsToBook = await prisma.item.findMany({
+        where: {
+          NOT: { ownerId: decoded.userId },
+          bookings: { none: { status: "APPROVED" } }
+        }
       })
       //owners
       //ternary operator to check if the returned array from the db is null or there are react elements to render
@@ -58,7 +82,7 @@ export default async function HomePage() {
               Browse all community items →
             </a>
           </div>
-
+            {/**items that you own */}
           <section style={{ marginBottom: '48px' }}>
             <h2 style={{ marginBottom: '20px' }}>Your Items</h2>
             {items.length === 0
@@ -93,7 +117,7 @@ export default async function HomePage() {
             }
           </section>
             {/*display all the pending requests and the borrower's details */}
-          <section>
+          <section style={{ marginBottom: '48px'}}>
             <h2 style={{ marginBottom: '20px' }}>Pending Requests</h2>
             {bookedItems.length === 0
               ? (
@@ -129,24 +153,74 @@ export default async function HomePage() {
               )
             }
           </section>
+          {/**to display the items that are pending for approval */}
+          <section style={{ marginBottom: '48px'}}>
+              <h2 style={{ marginBottom: '20px' }}>My Bookings</h2>
+              {bookings.length === 0
+                ? (
+                  <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                    <p>No bookings yet. Request an item above.</p>
+                  </div>
+                )
+                : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {bookings.map(booking => (
+                      <div key={booking.id} className="card" style={{ display: 'flex', justifyContent: 'space-between',               alignItems: 'center' }}>
+                        <div>
+                          <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.item.description}</p>
+                        </div>
+                        <span className={`badge badge-${booking.status.toLowerCase()}`}>
+                          {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+          </section>
+          {/*for user.canList to book items that are available*/}
+          <section style={{ marginBottom: '48px' }}>
+            <h2 style={{ marginBottom: '20px' }}>Available Items</h2>
+            {itemsToBook.length === 0
+              ? (
+                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                  <p>No items available right now. Check back soon.</p>
+                </div>
+              )
+              : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                  {itemsToBook.map(item => (
+                    <div key={item.id} className="card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        <h3>{item.title}</h3>
+                        <span className="badge badge-available">Available</span>
+                      </div>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                        {item.description}
+                      </p>
+                      <BookingButton itemId={item.id} />
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+          </section>
         </div>
-      )
+       )
     }
 
-    if(user.role === 'BORROWER') {
-      //confirm their role as a borrower from the database
+    if(user.canBorrow) {
       //gets all the available items, by filtering items whose status is 'approved'
       const items = await prisma.item.findMany({
         where: {
           bookings: { none: { status: "APPROVED" } }
         }
       })
-      //gets all the bookings made by the borrower signed in
       const bookings = await prisma.booking.findMany({
         where: { borrowerId: decoded.userId },
         include: { item: true }
       })
-
       return (
         <div className="page">
           <div style={{ marginBottom: '32px' }}>
@@ -191,7 +265,6 @@ export default async function HomePage() {
               )
             }
           </section>
-
           <section>
             <h2 style={{ marginBottom: '20px' }}>My Bookings</h2>
             {bookings.length === 0
@@ -203,7 +276,7 @@ export default async function HomePage() {
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {bookings.map(booking => (
-                    <div key={booking.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={booking.id} className="card" style={{ display: 'flex', justifyContent:'space-between',alignItems:'center' }}>
                       <div>
                         <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.item.description}</p>
@@ -214,8 +287,8 @@ export default async function HomePage() {
                     </div>
                   ))}
                 </div>
-              )
-            }
+                )
+              }
           </section>
         </div>
       )

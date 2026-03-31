@@ -11,8 +11,7 @@ async function main() {
       name: 'Alice',
       phone: '0712345678',
       email: 'alice@gmail.com',
-      password: hashedPasswords,
-      role: 'OWNER'
+      password: hashedPasswords
     }
   })
 
@@ -24,8 +23,7 @@ async function main() {
       name: 'Mac',
       phone: '0787654321',
       email: 'mac@gmail.com',
-      password: hashedpass,
-      role: 'BORROWER'
+      password: hashedpass
     }
   })
 

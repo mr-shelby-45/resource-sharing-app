@@ -2,11 +2,11 @@
 //this will run first before the api routes, extract identity from the header(that's from the browser)
 //evaluate that identity if it exists, either return an authenticated user or an error message
 import { verify, sign } from "jsonwebtoken"
-import { Role } from "@/generated/prisma/enums"
 
-export function signToken(userId: number, role: Role): string {
+
+export function signToken(userId: number): string {
   return sign(
-    { userId, role }, 
+    { userId }, 
     process.env.JWT_SECRET!, 
     { expiresIn: '7d' }
   )

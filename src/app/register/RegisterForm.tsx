@@ -53,16 +53,6 @@ export default function RegistrationForm( { action } : Props) {
             </label>
             <input name="password" type="password" placeholder="Password" required/>
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
-            fontWeight: '500' }}>
-              Choose a role e.g Owner to add an item for booking, Borrower to borrow an item
-            </label>
-            <select name="role" required>
-              <option value={'OWNER'}>Owner</option>
-              <option value={'BORROWER'}>Borrower</option>  
-            </select>
-          </div>
           {state?.error && (
               <p style={{ color: '#c0392b', fontSize: '0.9rem', padding: '10px 14px', 
                 background: '#fdecea', borderRadius: '8px' }}>

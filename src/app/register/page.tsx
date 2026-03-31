@@ -11,12 +11,12 @@ async function register(prevState: any, formData: FormData) {
     const email = formData.get('email') as string
     const phone = formData.get('phone') as string
     const password = formData.get('password') as string
-    const role = formData.get('role')  as 'OWNER' | 'BORROWER'
-    if(!name ||!email || !phone || !password || !role) {
+
+    if(!name ||!email || !phone || !password) {
     return { error: "All fields are required!"}
     }
-    const user = await registerUser(name, email, phone, password, role)
-    const signedToken = signToken(user.id, user.role)
+    const user = await registerUser(name, email, phone, password)
+    const signedToken = signToken(user.id)
     const cookiesStore = await cookies()
     cookiesStore.set('token', signedToken, {
       httpOnly: true,

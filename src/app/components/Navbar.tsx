@@ -49,7 +49,7 @@ export default async function NavBar() {
   if (!token) return guestNav
 
   try {
-    const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string }
+    const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number }
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId }
     })
@@ -87,7 +87,7 @@ export default async function NavBar() {
           }}>
             Home
           </Link>
-          {user.role === 'OWNER' && (
+          {user.canList && (
             <Link href="/items/new" style={{
               color: 'var(--text-muted)',
               fontSize: '0.95rem',

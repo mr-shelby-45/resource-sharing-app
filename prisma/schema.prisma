@@ -13,11 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  OWNER
-  BORROWER
-  ADMIN
-}
 
 enum BookingStatus {
   PENDING
@@ -26,12 +21,14 @@ enum BookingStatus {
 }
 
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  phone String
-  email String  @unique
-  password  String 
-  role  Role
+  id            Int    @id @default(autoincrement())
+  name          String
+  phone         String
+  email         String  @unique
+  password      String 
+  isAdmin       Boolean @default(false)
+  canList       Boolean @default(false)
+  canBorrow     Boolean @default(true)
   items Item[]
   bookings Booking[]
 }

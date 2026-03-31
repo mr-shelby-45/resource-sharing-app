@@ -5,10 +5,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     //destructure new User's details from the body
-    const { name, phone, email, role, password } = body;
-    const user = await registerUser(name, email, phone, 
-    password, role)
-    const signedToken = signToken(user.id, user.role)
+    const { name, email, phone, password } = body;
+    const user = await registerUser(name, email, phone, password)
+    const signedToken = signToken(user.id)
     //check if user already exist in the db
     const response = Response.json(
       { message: 'Regitration successful!'},
