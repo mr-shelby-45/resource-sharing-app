@@ -16,7 +16,7 @@ async function login(prevState: any,formData: FormData) {
       return { error: "Email and Password required"}
     }
     const user = await loginUser(email, password)
-    const signedToken = signToken(user.id, user.role)
+    const signedToken = signToken(user.id)
     const cookiesStore = await cookies()
     cookiesStore.set('token', signedToken, {
       httpOnly: true,
