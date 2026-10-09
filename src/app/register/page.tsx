@@ -3,6 +3,7 @@ import RegistrationForm from "./RegisterForm"
 import { registerUser } from "@/services/authServices"
 import { signToken } from "@/lib/auth"
 import { cookies } from "next/headers"
+import { validateRegisterInput } from "@/lib/validators"
 
 async function register(prevState: any, formData: FormData) {
   'use server'
@@ -11,10 +12,9 @@ async function register(prevState: any, formData: FormData) {
     const email = formData.get('email') as string
     const phone = formData.get('phone') as string
     const password = formData.get('password') as string
-
-    if(!name ||!email || !phone || !password) {
-    return { error: "All fields are required!"}
-    }
+    //data validation
+    validateRegisterInput(name, email, phone, password)
+    // register user via authServices
     const user = await registerUser(name, email, phone, password)
     const signedToken = signToken(user.id)
     const cookiesStore = await cookies()

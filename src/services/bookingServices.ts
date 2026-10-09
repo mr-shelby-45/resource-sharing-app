@@ -1,5 +1,6 @@
+//bookingServices.ts
 import { prisma } from "@/lib/prisma";
-import { canApproveBooking, canCreateBooking } from "@/lib/permissions";
+import { canApproveBooking, canCreateBooking, canCancelBooking, canReturnItem } from "@/lib/permissions";
 import { Item, User } from "@/generated/prisma/client";
 
 export async function createBooking(user: User, item: Item) {
@@ -58,13 +59,43 @@ export async function approveBooking(user: User, bookingId: number, action: stri
         data: { status: "REJECTED"}
       })
     ])
-    return(updatedBooking)
+    return updatedBooking
   }
   if(action === 'reject') {
     const rejectedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: { status: 'REJECTED' }
     })
-    return (rejectedBooking)
+    return rejectedBooking
   } 
+}
+export async function returnItem(user: User, bookingId: number, item: Item) {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId }})
+
+  if(!booking) throw new Error("Booking not found")
+  const permission = canReturnItem(user, booking, item)
+  if(!permission.allowed) throw new Error(permission.message)
+
+  const returned = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: "RETURNED" }
+  })
+  return returned
+}
+
+export async function cancelBooking(user: User, bookingId: number) {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId }
+  })
+  if(!booking) throw new Error("Booking not found")
+  //check permission to cancel and the booking status(status === 'PENDING') with canCancelBooking function from permissions.ts
+  const permission = canCancelBooking(user, booking)
+  if(!permission.allowed) throw new Error(permission.message)
+
+  const cancelled = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: "CANCELLED"}
+  })
+  return cancelled
 }

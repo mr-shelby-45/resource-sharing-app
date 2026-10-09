@@ -18,6 +18,8 @@ enum BookingStatus {
   PENDING
   APPROVED
   REJECTED
+  RETURNED
+  CANCELLED
 }
 
 model User {

@@ -8,7 +8,7 @@ export function canAddItem(user: User) {
     return { allowed: true }
   }
   if(!user.canList) {
-    return { allowed: false, message: 'Only Owners can create add new items'}
+    return { allowed: false, message: 'Only Owners can add new items'}
   }
   return { allowed: true }
 }
@@ -39,6 +39,9 @@ export function canApproveBooking( user: User, item: Item, booking: Booking) {
   if(user.isAdmin) {
     return{ allowed: true }
   }
+  if(!user.canList) {
+  return { allowed: false, message: 'Only owners can approve this booking' }
+  }
   //user can only approve the item that they own
   if(item.ownerId !== user.id) {
     return{ allowed: false, message: 'one can only approve the items that they own'}
@@ -56,12 +59,42 @@ export function canDeleteItem(user: User, item: Item, isAvailable: boolean) {
   if(user.isAdmin) {
     return{ allowed: true }
   }
+  if(!user.canList) {
+  return { allowed: false, message: 'Only Owners can delete this item'}
+  }
   //makes sure that you can only delete an item that you own and not any other even if your user.role === 'owner'
   if(item.ownerId !== user.id) {
     return { allowed: false, message: 'you can only delete your own item'}
   }
   if(!isAvailable) {
-    return{ allowed: false, message: 'Cannot delete a booked item '}
+    return{ allowed: false, message: 'Cannot delete a booked item'}
+  }
+  return { allowed: true }
+}
+
+export function canCancelBooking(user: User, booking: Booking) {
+  if(user.isAdmin) {
+    return { allowed: true }
+  }
+  if(booking.borrowerId !== user.id) {
+    return { allowed: false, message: "You can only cancel your own bookings"}
+  }
+  if(booking.status !== "PENDING") {
+    return { allowed: false, message: "Only pending bookings can be cancelled" }
+  }
+  return { allowed: true }
+}
+
+export function canReturnItem(user: User, booking: Booking, item: Item) {
+  if(user.isAdmin) {
+    return { allowed: true }
+  }
+  if(item.ownerId !== user.id) {
+    return { allowed: false, message: "Only the borrower can return the item"
+    }
+  }
+  if(booking.status !== "APPROVED") {
+    return { allowed: false, message: "Only approved items can be returned"}
   }
   return { allowed: true }
 }

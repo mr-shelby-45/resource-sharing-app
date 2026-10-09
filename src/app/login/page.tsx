@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import LoginForm from "./Loginform"
 import { loginUser } from "@/services/authServices"
 import { signToken } from "@/lib/auth"
+import { validateLoginInput } from "@/lib/validators"
 
 async function login(prevState: any,formData: FormData) {
   'use server'
@@ -11,10 +12,8 @@ async function login(prevState: any,formData: FormData) {
     //.get takes in the data entered
     const email = formData.get('email') as string
     const password = formData.get('password') as string
-    //retrieve user by their email
-    if(!email || !password) {
-      return { error: "Email and Password required"}
-    }
+    // data validation
+    validateLoginInput(email, password)
     const user = await loginUser(email, password)
     const signedToken = signToken(user.id)
     const cookiesStore = await cookies()

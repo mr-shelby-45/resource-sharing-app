@@ -1,3 +1,4 @@
+//import the security primitives that you want
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next"
 import { NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose";
@@ -5,11 +6,14 @@ import { jwtVerify } from "jose";
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
+    //shield protect against the common attacks like SQLI & XSS
     shield({ mode: 'LIVE'}),
+    //identifies automated scripts,postman is manually allowed
     detectBot({
       mode: 'LIVE',
       allow: ["POSTMAN"],
     }),
+    //ratelimiting at 20 requests max per minute
     slidingWindow({
       mode: "LIVE",
       interval: "1m",
@@ -17,11 +21,13 @@ const aj = arcjet({
     }),
   ],
 });
-
+//define a url path that require a valid user login(JWT)
 const protectedRoutes = [ "/api/items", "/api/bookings", "/items", "/bookings"];
 
 export async function proxy(request: NextRequest) {
+  //arcjet runs the rules defined above
   const decision = await aj.protect(request)
+  //if arcjet blocks the request, check the reason for the block and display a message
   if(decision.isDenied()) {
     if(decision.reason.isBot()) {
       return NextResponse.json(
@@ -40,13 +46,15 @@ export async function proxy(request: NextRequest) {
       { status: 403 }
     )
   }
-  //auth check on protected routes
+  //auth check if the current url path is on the protectedRoutes list
   const isProtected = protectedRoutes.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
 
   if(isProtected) {
+    //if its protected get the token from the user's browser's cookies
     const token = request.cookies.get('token')?.value
+    //if no token exist block access with a 401 status code
     if(!token) {
       return NextResponse.json(
         { message: "Unauthorized" },
@@ -54,13 +62,16 @@ export async function proxy(request: NextRequest) {
       )
     }
     try {
+      //verify jwt signature against the secret key
       await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET!))
     } catch {
        return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
   }
+  //if all checks pass allow the request to [proceed]
   return NextResponse.next();
 }
+//tells nextconfig to only run on these specific URL patterns
 export const config = {
   matcher: ["/api/:path*", "/items/:path*", "/bookings/:path*"],
 }
