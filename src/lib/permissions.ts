@@ -14,8 +14,10 @@ export function canAddItem(user: User) {
 }
 
 export function canCreateBooking(user: User, item: Item, isAvailable: boolean) {
-  //only role check is borrower
-  //1. admin overrule
+  //
+  if(!isAvailable) {                                                     
+    return{ allowed: false, message: 'item is not available for booking'}
+  }                                                                      
   if(user.isAdmin) {
     return { allowed: true }
   }
@@ -26,9 +28,6 @@ export function canCreateBooking(user: User, item: Item, isAvailable: boolean) {
   //2. business rule
   if(item.ownerId === user.id) {
     return{ allowed: false, message: "can't book your own item"}
-  }
-  if(!isAvailable) {
-    return{ allowed: false, message: 'item is not available for booking'}
   }
   //4. success
   return{ allowed: true }
@@ -90,7 +89,7 @@ export function canReturnItem(user: User, booking: Booking, item: Item) {
     return { allowed: true }
   }
   if(item.ownerId !== user.id) {
-    return { allowed: false, message: "Only the borrower can return the item"
+    return { allowed: false, message: "Only the item owner can mark it as returned"
     }
   }
   if(booking.status !== "APPROVED") {

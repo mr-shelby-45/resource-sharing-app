@@ -1,6 +1,7 @@
 //find an item by id, receives the item's id from the URL via params, displays details of the item and a button to book iff the item is available 
 import { prisma } from '@/lib/prisma'
 import BookingButton from './BookingButton'
+import { formatRate } from '@/lib/format'
 
 export default async function ItemDetailPage ({ params }: { params: Promise<{ id: string }>}) {
   //destructure id from URL via params and reassign to the variable rawId
@@ -50,6 +51,9 @@ export default async function ItemDetailPage ({ params }: { params: Promise<{ id
         </div>
         <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.7' }}>
           {item.description}
+        </p>
+        <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
+          {formatRate(item.dailyRate)}
         </p>
         { isAvailable && <BookingButton itemId={item.id} />}
       </div>

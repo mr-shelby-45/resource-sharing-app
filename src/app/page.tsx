@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import BookingActions from './bookings/BookingActions'
 import BookingButton from './items/[id]/BookingButton'
 import DeleteButtonClient from './items/[id]/DeleteClient'
+import { formatRate } from '@/lib/format'
 
 export default async function HomePage() {
   //cookies are not manually forwarded.
@@ -108,6 +109,9 @@ export default async function HomePage() {
                         </div>
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}
                         </p>
+                        <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
+                          {formatRate(item.dailyRate)}
+                        </p>
                         <DeleteButtonClient itemId={item.id}/>
                       </div>
                     )
@@ -199,6 +203,9 @@ export default async function HomePage() {
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
                         {item.description}
                       </p>
+                      <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
+                        {formatRate(item.dailyRate)}
+                      </p>
                       <BookingButton itemId={item.id} />
                     </div>
                   ))}
@@ -257,6 +264,9 @@ export default async function HomePage() {
                       </div>
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
                         {item.description}
+                      </p>
+                      <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
+                        {formatRate(item.dailyRate)}
                       </p>
                       <BookingButton itemId={item.id} />
                     </div>

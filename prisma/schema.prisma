@@ -41,8 +41,22 @@ model Item {
   owner       User    @relation(fields: [ownerId], references: [id]) 
   title       String
   description String
+  dailyRate   Int     @default(0)
+  images      ItemImage[]
   bookings    Booking[]
 }
+
+model ItemImage {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url       String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+}
+
 
 model Booking {
   id         Int           @id @default(autoincrement())
@@ -51,6 +65,10 @@ model Booking {
   borrower   User      @relation(fields: [borrowerId], references:[id])
   item       Item       @relation(fields: [itemId], references: [id])
   status     BookingStatus @default(PENDING)
+  startDate  DateTime      @db.Date   
+  endDate    DateTime      @db.Date   
+  dailyRate  Int                      
+  returnedAt DateTime?                
 
 }
 

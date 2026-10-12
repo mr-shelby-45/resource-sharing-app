@@ -42,6 +42,21 @@ export default function ItemForm({ action }: Props) {
             required/>
           </div>
 
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '500' }}>
+              Price per day (KES)
+            </label>
+            <input
+              name="dailyRate"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              placeholder="e.g. 150. Enter 0 for free"
+              required
+            />
+          </div>
+
           {state?.error && (
             <p style={{ color: '#c0392b', fontSize: '0.9rem', padding: '10px 14px', background: '#fdecea', borderRadius: '8px' }}>
               {state.error}

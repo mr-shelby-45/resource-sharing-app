@@ -33,7 +33,8 @@ async function main() {
     create: {
       ownerId: alice.id,
       title: 'Electric drill',
-      description: 'Good condition, light use'
+      description: 'Good condition, light use',
+      dailyRate: 400
     }
   })
 }

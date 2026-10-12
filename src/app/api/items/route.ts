@@ -4,8 +4,8 @@ import { handleError, withAuth } from '@/lib/apiHandler'
 
 export async function POST(request: Request) {
   return withAuth(request, async (req, currentUser) => {
-    const { title, description } = await req.json()
-    const newItem = await addNewItem(currentUser, title,description)
+    const { title, description, dailyRate } = await req.json()
+    const newItem = await addNewItem(currentUser, title, description, dailyRate)
     return Response.json(newItem, { status: 201 })
   })
 }
@@ -15,6 +15,6 @@ export async function GET() {
     const items = await prisma.item.findMany()
     return Response.json(items)
   } catch (error) {
-    handleError(error, "Get items error")
+    return handleError(error, "Get items error")
   }
 }

@@ -1,22 +1,29 @@
-//find booking by id,change status to approved,set item.available to FALSE, Reject other bookings for the same item by owner
-
-import { approveBooking } from '@/services/bookingServices'
+//one endpoint, four actions on a booking: approve, reject (owner), return (owner), cancel (borrower)
+import { approveBooking, returnItem, cancelBooking } from '@/services/bookingServices'
 import { withAuth } from '@/lib/apiHandler'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // or : Props
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  return withAuth(request, async (req, currentUser)=> { 
+  return withAuth(request, async (req, currentUser) => {
     const { id } = await params //from the url
-    console.log(typeof(id))
-    const { action } = await req.json() as { action: string } //action from the body
-    //validate only the eligibe actions 
-    const validActions = ["accept", "reject"]
-    if(!action || !validActions.includes(action)) {
-      return Response.json({ message: "InvalidActions" }, { status: 400 })
+    const bookingId = Number(id)
+    if(!Number.isInteger(bookingId)) {
+      return Response.json({ message: "Invalid booking id" }, { status: 400 })
     }
-    const booked = await approveBooking(currentUser, Number(id), action)
-    return Response.json(booked, { status: 200 })
-  }) 
+    const { action } = await req.json() as { action: string } //from the body
+
+    switch(action) {
+      case "approve":
+      case "reject":
+        return Response.json(await approveBooking(currentUser, bookingId, action), { status: 200 })
+      case "return":
+        return Response.json(await returnItem(currentUser, bookingId), { status: 200 })
+      case "cancel":
+        return Response.json(await cancelBooking(currentUser, bookingId), { status: 200 })
+      default:
+        return Response.json({ message: "Invalid action" }, { status: 400 })
+    }
+  })
 }

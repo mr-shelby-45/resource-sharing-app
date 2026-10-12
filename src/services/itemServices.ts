@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/prisma"
 import { canDeleteItem, canAddItem } from "@/lib/permissions"
+import { validateItemInput } from "@/lib/validators"
 import { User } from "@/generated/prisma/client"
 
-export async function addNewItem(user: User, title: string, description: string) {
+export async function addNewItem(user: User, title: string, description: string, dailyRate: number) {
   const permission = canAddItem(user)
   if(!permission.allowed) throw new Error(permission.message)
-
+  //input checks
+  validateItemInput(title, description, dailyRate)
+  //check for an already similar item by the same user
   const currentItem = await prisma.item.findFirst({
     where: {
       ownerId: user.id,
@@ -20,7 +23,8 @@ export async function addNewItem(user: User, title: string, description: string)
     data: {
       ownerId: user.id,
       title,
-      description
+      description,
+      dailyRate
     }
   })
 }

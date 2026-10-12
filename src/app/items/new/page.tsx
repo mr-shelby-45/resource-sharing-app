@@ -16,6 +16,8 @@ import { addNewItem } from '@/services/itemServices'
     //get title and description from the form UI
     const newTitle = formData.get('title') as string
     const newDescription = formData.get('description') as string
+    const rawRate = String(formData.get('dailyRate')?? '').trim()
+    const dailyRate = rawRate === ''? NaN : Number(rawRate)
     //get the userId and role from the token
     const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string }
     //get the user from the database by the userId
@@ -26,7 +28,7 @@ import { addNewItem } from '@/services/itemServices'
     if(!user) {
       return { error: "User does not exist!"}
     }
-    await addNewItem(user, newTitle, newDescription)
+    await addNewItem(user, newTitle, newDescription, dailyRate)
 
   } catch(error: any) {
     return { error: error.message || "Failed to add item"}

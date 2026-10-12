@@ -1,15 +1,24 @@
 import { prisma } from '@/lib/prisma';
 import { createBooking } from '@/services/bookingServices';
-import { handleError, withAuth } from '@/lib/apiHandler';
+import { withAuth } from '@/lib/apiHandler';
+import { parseDay } from '@/lib/dates';
 
 export async function POST(request: Request) {
-  return withAuth(request, async(req, currentUser) => {
-    //destructure item from raw json data
-    const { item } = await req.json()
-    const newBooking = await createBooking(currentUser, item)
+  return withAuth(request, async (req, currentUser) => {
+    //the client sends only an id and two dates. The item, and its price, come from our database
+    const { itemId, startDate, endDate } = await req.json()
+    if(!Number.isInteger(itemId)) {
+      return Response.json({ message: "itemId must be a whole number" }, { status: 400 })
+    }
+    const item = await prisma.item.findUnique({ where: { id: itemId } })
+    if(!item) {
+      return Response.json({ message: "Item not found" }, { status: 404 })
+    }
+    const newBooking = await createBooking(currentUser, item, parseDay(startDate), parseDay(endDate))
     return Response.json(newBooking, { status: 201 })
   })
 }
+
 //GET all bookings associated with the logged in user
 export async function GET(request: Request) {
   return withAuth(request, async (req, currentUser) => {
@@ -24,7 +33,8 @@ export async function GET(request: Request) {
           },
       include: {
         item: true,
-        borrower: true
+        //never send the whole user record: it contains the password hash
+        borrower: { select: { id: true, name: true, email: true, phone: true } }
       }
     })
     return Response.json(bookings)

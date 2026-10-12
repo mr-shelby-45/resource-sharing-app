@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verify } from 'jsonwebtoken'
 import BookingButton from "./[id]/BookingButton"
+import { formatRate } from "@/lib/format"
 //server component gets all the items for listing from across the platform and reduces the js bundle from the client component to the browser
 export default async function ItemsPage() {
   const cookiesStore = await cookies()
@@ -48,6 +49,9 @@ export default async function ItemsPage() {
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
                       {item.description}
+                    </p>
+                    <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
+                      {formatRate(item.dailyRate)}
                     </p>
                     {isAvailable && item.ownerId !== decoded.userId
                     ? <BookingButton itemId={item.id} />
