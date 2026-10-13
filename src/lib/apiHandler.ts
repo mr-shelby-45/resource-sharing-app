@@ -1,6 +1,8 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma"
 import { User } from "@/generated/prisma/client"
+import { AppError } from "@/lib/errors"
+
 
 //for errorhandling in routes
 export function handleError(error: unknown, context: string) {
@@ -24,6 +26,7 @@ export async function withAuth(request: Request, handler: AuthedHandler): Promis
     return await handler(request, currentUser)
   } catch (error) {
     const message = error instanceof Error ? error.message : "An unexpected error occurred"
+    const status = error instanceof AppError ? error.status : 500
     console.error("API error:", message)
     return Response.json({message}, {status: 500})
   }

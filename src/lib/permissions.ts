@@ -14,22 +14,18 @@ export function canAddItem(user: User) {
 }
 
 export function canCreateBooking(user: User, item: Item, isAvailable: boolean) {
-  //
   if(!isAvailable) {                                                     
     return{ allowed: false, message: 'item is not available for booking'}
-  }                                                                      
+  }    
+  if(item.ownerId === user.id) {                                                                                                  
+    return{ allowed: false, message: "can't book your own item"}                                                              
+  }
   if(user.isAdmin) {
     return { allowed: true }
   }
-  //2. Banned from borrowing
   if(!user.canBorrow) {
     return { allowed: false, message: "Cannot borrow, check with admin"}
   }
-  //2. business rule
-  if(item.ownerId === user.id) {
-    return{ allowed: false, message: "can't book your own item"}
-  }
-  //4. success
   return{ allowed: true }
 }
 
