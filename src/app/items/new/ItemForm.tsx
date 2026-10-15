@@ -32,36 +32,37 @@ export default function ItemForm({ action }: Props) {
   const [photoError, setPhotoError] = useState('')
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
-    e.target.value = ''   // lets the same file be picked again later
-    if (files.length === 0) return
-    setPhotoError('')
+  const files = Array.from(e.target.files ?? [])
+  e.target.value = ''   // lets the same file be picked again later
+  if (files.length === 0) return
+  setPhotoError('')
 
-    const room = MAX_PHOTOS - photos.length
-    if (files.length > room) {
-      setPhotoError(`You can add ${MAX_PHOTOS} photos in total. Using the first ${room}.`)
-    }
-
-    setUploading(true)
-    try {
-      for (const file of files.slice(0, room)) {
-        const small = await resizeImage(file)
-        const blob = await upload(`items/${small.name}`, small, {
-          access: 'public',
-          handleUploadUrl: '/api/upload',
-        })
-        setPhotos(prev => [...prev, { url: blob.url, preview: URL.createObjectURL(small) }])
-      }
-    
-    } catch (err) {
-      const message = err instanceof Error ? err.message : ''
-      setPhotoError(
-        message.includes('client token')
-          ? 'Photo upload was refused. Check that you are logged in and allowed to list items.'
-          : message || 'Upload failed'
-      )
-    }
+  const room = MAX_PHOTOS - photos.length
+  if (files.length > room) {
+    setPhotoError(`You can add ${MAX_PHOTOS} photos in total. Using the first ${room}.`)
   }
+
+  setUploading(true)
+  try {
+    for (const file of files.slice(0, room)) {
+      const small = await resizeImage(file)
+      const blob = await upload(`items/${small.name}`, small, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      })
+      setPhotos(prev => [...prev, { url: blob.url, preview: URL.createObjectURL(small) }])
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : ''
+    setPhotoError(
+      message.includes('client token')
+        ? 'Photo upload was refused. Check that you are logged in and allowed to list items.'
+        : message || 'Upload failed'
+    )
+  } finally {
+    setUploading(false)   // always unlock the form, success or failure
+  }
+}
 
   return (
     <div style={{

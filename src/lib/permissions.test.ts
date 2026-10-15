@@ -217,7 +217,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),
       dailyRate: 100,
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -248,7 +249,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -279,7 +281,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false, message: 'Only owners can approve this booking'})
@@ -310,7 +313,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false, message: "one can only approve the items that they own" })
@@ -341,7 +345,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false,  message:'This booking has already been processed!'})
@@ -372,7 +377,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false,  message:'This booking has already been processed!'})
@@ -403,7 +409,8 @@ describe("bookingapproval", () => {
       startDate: new Date("2026-10-11"),
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
-      returnedAt: new Date("2026-10-14")
+      returnedAt: new Date("2026-10-14"),
+      decisionNote: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -547,7 +554,7 @@ describe("allow deletion of an item from listing:", () => {
 
 describe("canCreateBooking availability", () => {
   const admin = { id: 1, name: "alice", phone: "797812893", email: "alice@gmail.com", password: "pass4", isAdmin: true, canList: true, canBorrow: true }
-  const item = { id: 1, ownerId: 1, title: "drill", description: "light use", dailyRate: 150 }
+  const item = { id: 1, ownerId: 2, title: "drill", description: "light use", dailyRate: 150 }
 
   it("admin cannot book dates that are taken", () => {
     expect(canCreateBooking(admin, item, false)).toEqual({ allowed: false, message: "item is not available for booking" })

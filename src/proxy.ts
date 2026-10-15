@@ -22,7 +22,7 @@ const aj = arcjet({
   ],
 });
 //define a url path that require a valid user login(JWT)
-const protectedRoutes = [ "/api/items", "/api/bookings", "/items", "/bookings"];
+const protectedRoutes = [ "/api/items", "/api/bookings", "/items", "/bookings", "/api/upload"];
 
 export async function proxy(request: NextRequest) {
   //arcjet runs the rules defined above

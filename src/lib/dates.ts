@@ -1,3 +1,4 @@
+import { AppError } from "@/lib/errors"
 //the community lives in Kenya, so "today" means today in Nairobi, not on the server (UTC)
 const COMMUNITY_TIME_ZONE = "Africa/Nairobi"
 export const MAX_BOOKING_DAYS = 14
@@ -6,12 +7,12 @@ const DAY_MS = 24 * 60 * 60 * 1000
 //"2026-11-10" -> midnight UTC of that day, the shape Prisma expects for a @db.Date column
 export function parseDay(value: unknown): Date {
   if(typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new Error("Dates must be in YYYY-MM-DD format")
+    throw new AppError( 400, "Dates must be in YYYY-MM-DD format")
   }
   const date = new Date(`${value}T00:00:00.000Z`)
   //JS rolls 2026-02-31 over into March, so compare it back to the input to catch impossible dates
   if(Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
-    throw new Error("Invalid date")
+    throw new AppError( 400, "Invalid date")
   }
   return date
 }

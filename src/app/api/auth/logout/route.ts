@@ -1,12 +1,7 @@
-export async function POST() {
+import { clearedSessionCookie } from "@/lib/auth"
 
-  const response = Response.json(
-  { message: 'Logout successful'},
-  { status: 200 }
-  )
-  response.headers.set(
-    'Set-Cookie' , 
-    `token=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict`
-  )
-  return response 
+export async function POST() {
+  const response = Response.json({ message: 'Logout successful' }, { status: 200 })
+  response.headers.set('Set-Cookie', clearedSessionCookie())
+  return response
 }

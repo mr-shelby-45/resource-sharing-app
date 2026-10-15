@@ -2,7 +2,7 @@ import { countDays, calculateFee } from '@/lib/dates'
 import { formatDateRange } from '@/lib/format'
 
 type Props = {
-  booking: { startDate: Date; endDate: Date; dailyRate: number }
+  booking: { startDate: Date; endDate: Date; dailyRate: number; decisionNote?: string | null }
 }
 
 // Dates, number of days and fee for one booking. No hooks, so it works in server components.
@@ -15,6 +15,7 @@ export default function BookingDetails({ booking }: Props) {
       <p style={{ fontWeight: 500 }}>
         {fee === 0 ? 'Free' : `Fee: KES ${fee.toLocaleString('en-KE')}`}
       </p>
+      {booking.decisionNote && <p style={{ fontStyle: 'italic' }}>{booking.decisionNote}</p>}
     </div>
   )
 }

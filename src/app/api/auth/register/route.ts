@@ -1,27 +1,19 @@
+// src/app/api/auth/register/route.ts
 import { registerUser } from "@/services/authServices"
-import { signToken } from "@/lib/auth"
-import { validateRegisterInput } from "@/lib/validators";
+import { signToken, sessionCookie } from "@/lib/auth"
+import { validateRegisterInput } from "@/lib/validators"
+import { handleError, readJson } from "@/lib/apiHandler"
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    //destructure new User's details from the body
-    const { name, email, phone, password } = body;
-    //validate the parsed data
+    const { name, email, phone, password } =
+      await readJson<{ name: string; email: string; phone: string; password: string }>(request)
     validateRegisterInput(name, email, phone, password)
     const user = await registerUser(name, email, phone, password)
-    const signedToken = signToken(user.id)
-    const response = Response.json(
-      { message: 'Regitration successful!'},
-      { status: 201 }
-    )
-    response.headers.set(
-      'Set-Cookie', 
-      `token=${signedToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict`)
+    const response = Response.json({ message: 'Registration successful!' }, { status: 201 })
+    response.headers.set('Set-Cookie', sessionCookie(signToken(user.id)))
     return response
-  } catch(error) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    const status = message === "An account already exist" ? 409 : 500
-    return Response.json({ message }, { status })
+  } catch (error) {
+    return handleError(error, "Register error")
   }
 }

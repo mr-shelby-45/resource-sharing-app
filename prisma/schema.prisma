@@ -59,16 +59,17 @@ model ItemImage {
 
 
 model Booking {
-  id         Int           @id @default(autoincrement())
-  itemId     Int
-  borrowerId Int
-  borrower   User      @relation(fields: [borrowerId], references:[id])
-  item       Item       @relation(fields: [itemId], references: [id])
-  status     BookingStatus @default(PENDING)
-  startDate  DateTime      @db.Date   
-  endDate    DateTime      @db.Date   
-  dailyRate  Int                      
-  returnedAt DateTime?                
+  id              Int           @id @default(autoincrement())
+  itemId          Int
+  borrowerId      Int
+  borrower        User      @relation(fields: [borrowerId], references:[id])
+  item            Item       @relation(fields: [itemId], references: [id])
+  status          BookingStatus @default(PENDING)
+  startDate       DateTime      @db.Date   
+  endDate         DateTime      @db.Date   
+  dailyRate       Int                      
+  returnedAt      DateTime?  
+  decisionNote    String?          
 
 }
 

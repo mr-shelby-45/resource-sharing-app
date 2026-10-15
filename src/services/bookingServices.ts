@@ -4,11 +4,14 @@ import { canApproveBooking, canCreateBooking, canCancelBooking, canReturnItem } 
 import { validateBookingDates } from "@/lib/validators";
 import { todayInNairobi } from "@/lib/dates";
 import { Item, User } from "@/generated/prisma/client";
-import { AppError, isOverlapViolation } from "@/lib/errors"
+import { AppError, isOverlapViolation, assertAllowed } from "@/lib/errors"
 import { BookingStatus } from "@/generated/prisma/client"
 
 // Moves a booking from one status to another ONLY if it is still in the expected status.
 // If someone else changed it first, count is 0 and we stop instead of overwriting their change.
+// shown to a borrower whose pending request lost because another one was approved for the same days
+export const OVERLAP_REJECTION_NOTE = "The item was booked by someone else for these dates."
+
 async function moveStatus(
   bookingId: number,
   from: BookingStatus,
@@ -40,7 +43,7 @@ export async function createBooking(user: User, item: Item, startDate: Date, end
   const isAvailable = !clash
   //check if the borrower is eligible to borrow
   const permission = canCreateBooking(user, item, isAvailable)
-  if(!permission.allowed) throw new Error(permission.message);
+  assertAllowed(permission)
   
   return await prisma.booking.create({
     data: {
@@ -64,11 +67,11 @@ export async function approveBooking(user: User, bookingId: number, action: stri
   const item = await prisma.item.findUnique({
     where: { id: booking.itemId }
   })
-  if(!item) throw new Error('Associated item not found!')
+  if(!item) throw new AppError(404, 'Associated item not found!')
   
   //check permission to approve a booking
   const permission = canApproveBooking(user, item, booking)
-  if(!permission.allowed) throw new Error(permission.message)
+  assertAllowed(permission)
 
   if (action === "approve") {
     if (booking.endDate < todayInNairobi()) throw new AppError(409, "This request has expired")
@@ -107,7 +110,7 @@ export async function approveBooking(user: User, bookingId: number, action: stri
             startDate: { lte: booking.endDate },
             endDate: { gte: booking.startDate },
           },
-          data: { status: "REJECTED" },
+          data: { status: "REJECTED", decisionNote: OVERLAP_REJECTION_NOTE },
         })
 
         return tx.booking.findUniqueOrThrow({ where: { id: bookingId } })
@@ -129,17 +132,17 @@ export async function approveBooking(user: User, bookingId: number, action: stri
 export async function returnItem(user: User, bookingId: number) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId }})
-  if(!booking) throw new Error("Booking not found")
+  if(!booking) throw new AppError(404, "Booking not found")
 
   const item = await prisma.item.findUnique({
     where: {
       id: booking.itemId
     }
   })
-  if(!item) throw new Error("Associated item not found!")
+  if(!item) throw new AppError(404, "Associated item not found!")
   
   const permission = canReturnItem(user, booking, item)
-  if(!permission.allowed) throw new Error(permission.message)
+  assertAllowed(permission)
   
   return moveStatus(bookingId, "APPROVED", "RETURNED", { returnedAt: new Date() })
 }
@@ -148,9 +151,9 @@ export async function cancelBooking(user: User, bookingId: number) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId }
   })
-  if(!booking) throw new Error("Booking not found")
+  if(!booking) throw new AppError(404, "Booking not found")
   //check permission to cancel and the booking status(status === 'PENDING') with canCancelBooking function from permissions.ts
   const permission = canCancelBooking(user, booking)
-  if(!permission.allowed) throw new Error(permission.message)
+  assertAllowed(permission)
   return moveStatus(bookingId, "PENDING", "CANCELLED")
 }

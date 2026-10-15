@@ -1,34 +1,18 @@
+// src/app/api/auth/login/route.ts
 import { loginUser } from "@/services/authServices"
-import { signToken } from "@/lib/auth"
-import { validateLoginInput } from "@/lib/validators";
+import { signToken, sessionCookie } from "@/lib/auth"
+import { validateLoginInput } from "@/lib/validators"
+import { handleError, readJson } from "@/lib/apiHandler"
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    //destructure email and password from the body
-    const { email, password } = body;
-    //validate parsed data
+    const { email, password } = await readJson<{ email: string; password: string }>(request)
     validateLoginInput(email, password)
-    //authServices logins the user
     const user = await loginUser(email, password)
-    //signs the cookie
-    const signedToken = signToken(user.id)
-    const response = Response.json(
-      { message: 'Login successful'},
-      { status: 200 }
-    )
-    response.headers.set(
-      'Set-Cookie' , 
-      `token=${signedToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict`)
+    const response = Response.json({ message: 'Login successful' }, { status: 200 })
+    response.headers.set('Set-Cookie', sessionCookie(signToken(user.id)))
     return response
-  } catch(error) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    console.log("Auth error :",  message )
-
-    const status = message === "Invalid credentials" ? 401 : 500
-    return Response.json(
-      {message: message || 'Internal server error'},
-      { status }
-    )
+  } catch (error) {
+    return handleError(error, "Login error")
   }
 }

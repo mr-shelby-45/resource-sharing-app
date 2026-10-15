@@ -6,9 +6,22 @@ import { AppError } from "@/lib/errors"
 
 //for errorhandling in routes
 export function handleError(error: unknown, context: string) {
-  const message = error instanceof Error ? error.message : "An unexpected error occurred"
-  console.error(`${context}` , message)
-  return Response.json({ message }, { status: 500 }) 
+  // errors we raised on purpose carry their own status and a message that is safe to show
+  if (error instanceof AppError) {
+    return Response.json({ message: error.message }, { status: error.status })
+  }
+  // anything else is a bug or a database failure: log the details, show a generic message
+  console.error(context, error)
+  return Response.json({ message: "Something went wrong. Please try again." }, { status: 500 })
+}
+
+// request.json() throws on an empty or broken body; turn that into a clear 400
+export async function readJson<T = Record<string, unknown>>(request: Request): Promise<T> {
+  try {
+    return (await request.json()) as T
+  } catch {
+    throw new AppError(400, "Request body must be valid JSON")
+  }
 }
 
 
@@ -25,10 +38,7 @@ export async function withAuth(request: Request, handler: AuthedHandler): Promis
     if(!currentUser) return Response.json({ message: "user not found" }, { status: 404 })
     return await handler(request, currentUser)
   } catch (error) {
-    const message = error instanceof Error ? error.message : "An unexpected error occurred"
-    const status = error instanceof AppError ? error.status : 500
-    console.error("API error:", message)
-    return Response.json({ message }, { status })
+    return handleError(error, "API error")
   }
 }
 

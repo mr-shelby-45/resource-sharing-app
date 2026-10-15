@@ -2,11 +2,12 @@ import { prisma } from '@/lib/prisma';
 import { createBooking } from '@/services/bookingServices';
 import { withAuth } from '@/lib/apiHandler';
 import { parseDay } from '@/lib/dates';
+import { readJson } from '@/lib/apiHandler';
 
 export async function POST(request: Request) {
   return withAuth(request, async (req, currentUser) => {
     //the client sends only an id and two dates. The item, and its price, come from our database
-    const { itemId, startDate, endDate } = await req.json()
+    const { itemId, startDate, endDate } = await readJson<{ itemId: number; startDate: string; endDate: string }>(req)
     if(!Number.isInteger(itemId)) {
       return Response.json({ message: "itemId must be a whole number" }, { status: 400 })
     }

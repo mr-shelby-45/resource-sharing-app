@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import bcrypt, { hash } from 'bcryptjs'
 import { validateLoginInput, validateRegisterInput } from "@/lib/validators"
+import { AppError, assertAllowed } from "@/lib/errors"
 
 export async function registerUser(name: string, email: string, phone: string, password: string) {
   //data validation
@@ -11,7 +12,7 @@ export async function registerUser(name: string, email: string, phone: string, p
   })
   //flag if it exists
   if(user) {
-    throw new Error('An account already exist!')
+    throw new AppError(409, 'An account already exist!')
   }
   //hash the entered password
   const hashedPassword = await hash(password, 10)
@@ -43,7 +44,7 @@ export async function loginUser(email: string, password: string) {
   //verify the entered password
   const isMatch =  await bcrypt.compare(password, user.password)
   if(!isMatch) {
-    throw new Error('Invalid credentials')
+    throw new AppError(401, 'Invalid credentials')
   }
   const loggedIn = {
     id: user.id

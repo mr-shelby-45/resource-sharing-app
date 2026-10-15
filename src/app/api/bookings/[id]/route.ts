@@ -1,6 +1,7 @@
 //one endpoint, four actions on a booking: approve, reject (owner), return (owner), cancel (borrower)
 import { approveBooking, returnItem, cancelBooking } from '@/services/bookingServices'
 import { withAuth } from '@/lib/apiHandler'
+import { readJson } from '@/lib/apiHandler'
 
 export async function PATCH(
   request: Request,
@@ -12,7 +13,7 @@ export async function PATCH(
     if(!Number.isInteger(bookingId)) {
       return Response.json({ message: "Invalid booking id" }, { status: 400 })
     }
-    const { action } = await req.json() as { action: string } //from the body
+    const { action } = await readJson<{ action: string }>(req) //from the body
 
     switch(action) {
       case "approve":
