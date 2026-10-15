@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma"
 import { canDeleteItem, canAddItem } from "@/lib/permissions"
-import { validateItemInput } from "@/lib/validators"
+import { validateItemInput, validateImageUrls } from "@/lib/validators"
 import { User } from "@/generated/prisma/client"
 
-export async function addNewItem(user: User, title: string, description: string, dailyRate: number) {
+export async function addNewItem(user: User, title: string, description: string, dailyRate: number, imageUrls: string[] = []) {
   const permission = canAddItem(user)
   if(!permission.allowed) throw new Error(permission.message)
   //input checks
@@ -24,7 +24,8 @@ export async function addNewItem(user: User, title: string, description: string,
       ownerId: user.id,
       title,
       description,
-      dailyRate
+      dailyRate,
+      images: { create: imageUrls.map((url, position) => ({ url, position }))}
     }
   })
 }

@@ -28,7 +28,7 @@ export async function withAuth(request: Request, handler: AuthedHandler): Promis
     const message = error instanceof Error ? error.message : "An unexpected error occurred"
     const status = error instanceof AppError ? error.status : 500
     console.error("API error:", message)
-    return Response.json({message}, {status: 500})
+    return Response.json({ message }, { status })
   }
 }
 

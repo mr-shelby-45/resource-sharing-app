@@ -13,9 +13,9 @@ http:
     type: json
     data: |-
       { 
-      "itemId": 5, 
-      "startDate": "2026-11-10", 
-      "endDate": "2026-11-13" 
+      "itemId": 2, 
+      "startDate": "2026-11-13", 
+      "endDate": "2026-11-15" 
       }
   auth: inherit
 

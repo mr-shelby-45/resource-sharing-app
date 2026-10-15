@@ -29,3 +29,9 @@ export function countDays(start: Date, end: Date): number {
 export function calculateFee(dailyRate: number, start: Date, end: Date): number {
   return dailyRate * countDays(start, end)
 }
+
+// Two inclusive ranges overlap when each starts on or before the other ends.
+// Same rule the database constraint uses, so UI and DB agree.
+export function datesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+  return aStart <= bEnd && bStart <= aEnd
+}

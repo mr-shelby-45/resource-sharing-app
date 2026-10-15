@@ -3,9 +3,12 @@ import { redirect } from 'next/navigation'
 import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import BookingActions from './bookings/BookingActions'
-import BookingButton from './items/[id]/BookingButton'
+import Link from 'next/link'
 import DeleteButtonClient from './items/[id]/DeleteClient'
 import { formatRate } from '@/lib/format'
+import BookingDetails from './components/BookingDetails'
+import { todayInNairobi } from '@/lib/dates'
+import ItemCover from './components/ItemCover'
 
 export default async function HomePage() {
   //cookies are not manually forwarded.
@@ -39,7 +42,8 @@ export default async function HomePage() {
       const items = await prisma.item.findMany({
         where: { ownerId: decoded.userId },
         include: {
-          bookings: { where: { status: "APPROVED" } }
+          bookings: { where: { status: "APPROVED", endDate: { gte: todayInNairobi() } } },
+          images: { orderBy: { position: 'asc' }, take: 1 },
         }
       })
       //get all booked items, waiting for approval or rejection
@@ -52,15 +56,18 @@ export default async function HomePage() {
       })
       //owner's can now book
       const bookings = await prisma.booking.findMany({
-        where: { borrowerId: decoded.userId },
-        include: { item: true }
+        where: { borrowerId: decoded.userId,
+          status: { notIn: ['RETURNED', 'CANCELLED']}
+         },
+        include: { item: true },
+        orderBy: { startDate: 'asc'}
       })
 
       const itemsToBook = await prisma.item.findMany({
         where: {
-          NOT: { ownerId: decoded.userId },
-          bookings: { none: { status: "APPROVED" } }
-        }
+          NOT: { ownerId: decoded.userId }
+        },
+        include: { images: { orderBy: { position: 'asc'}, take: 1} }
       })
       //owners
       //ternary operator to check if the returned array from the db is null or there are react elements to render
@@ -101,14 +108,14 @@ export default async function HomePage() {
                     const isBooked = item.bookings.length > 0
                     return (
                       <div key={item.id} className="card">
+                        <ItemCover url={item.images[0]?.url} title={item.title} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                           <h3>{item.title}</h3>
                           <span className={`badge ${isBooked ? 'badge-booked' : 'badge-available'}`}>
                             {isBooked ? 'Booked' : 'Available'}
                           </span>
                         </div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}
-                        </p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}</p>
                         <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
                           {formatRate(item.dailyRate)}
                         </p>
@@ -137,6 +144,7 @@ export default async function HomePage() {
                         <div>
                           <h3 style={{ marginBottom: '4px' }}>{booking.item.title}</h3>
                           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{booking.item.description}</p>
+                          <BookingDetails booking={booking}/>
                         </div>
                         <span className="badge badge-pending">Pending</span>
                       </div>
@@ -150,7 +158,7 @@ export default async function HomePage() {
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.borrower.email}</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.borrower.phone}</p>
                       </div>
-                      <BookingActions bookingId={booking.id} />
+                      <BookingActions bookingId={booking.id} actions={['approve', 'reject']}/>
                     </div>
                   ))}
                 </div>
@@ -172,7 +180,10 @@ export default async function HomePage() {
                       <div key={booking.id} className="card" style={{ display: 'flex', justifyContent: 'space-between',               alignItems: 'center' }}>
                         <div>
                           <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.item.description}</p>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            {booking.item.description}
+                          </p>
+                          <BookingDetails booking={booking} />
                         </div>
                         <span className={`badge badge-${booking.status.toLowerCase()}`}>
                           {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
@@ -196,6 +207,7 @@ export default async function HomePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {itemsToBook.map(item => (
                     <div key={item.id} className="card">
+                      <ItemCover url={item.images[0]?.url} title={item.title} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                         <h3>{item.title}</h3>
                         <span className="badge badge-available">Available</span>
@@ -206,7 +218,10 @@ export default async function HomePage() {
                       <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
                         {formatRate(item.dailyRate)}
                       </p>
-                      <BookingButton itemId={item.id} />
+                      <Link href={`/items/${item.id}`} className="btn-accent"
+                        style={{ display: 'block', textAlign: 'center' }}>
+                        View and request
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -221,12 +236,16 @@ export default async function HomePage() {
       //gets all the available items, by filtering items whose status is 'approved'
       const items = await prisma.item.findMany({
         where: {
-          bookings: { none: { status: "APPROVED" } }
-        }
+          NOT: { ownerId: decoded.userId }
+        },
+        include: { images: { orderBy: { position: 'asc' }, take: 1 } },
       })
       const bookings = await prisma.booking.findMany({
-        where: { borrowerId: decoded.userId },
-        include: { item: true }
+        where: { borrowerId: decoded.userId,
+          status: {notIn: ['RETURNED', 'CANCELLED']}
+         },
+        include: { item: true },
+        orderBy: { startDate: 'asc' }
       })
       return (
         <div className="page">
@@ -258,6 +277,7 @@ export default async function HomePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {items.map(item => (
                     <div key={item.id} className="card">
+                      <ItemCover url={item.images[0]?.url} title={item.title} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                         <h3>{item.title}</h3>
                         <span className="badge badge-available">Available</span>
@@ -268,7 +288,10 @@ export default async function HomePage() {
                       <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
                         {formatRate(item.dailyRate)}
                       </p>
-                      <BookingButton itemId={item.id} />
+                      <Link href={`/items/${item.id}`} className="btn-accent"
+                        style={{ display: 'block', textAlign: 'center' }}>
+                        View and request
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -290,6 +313,7 @@ export default async function HomePage() {
                       <div>
                         <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.item.description}</p>
+                        <BookingDetails booking={booking} />
                       </div>
                       <span className={`badge badge-${booking.status.toLowerCase()}`}>
                         {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
@@ -303,7 +327,8 @@ export default async function HomePage() {
         </div>
       )
     }
-  } catch {
+  } catch (e){
+    console.error(e)
     redirect('/login')
   }
 }

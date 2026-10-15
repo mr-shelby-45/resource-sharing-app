@@ -87,6 +87,8 @@ export async function approveBooking(user: User, bookingId: number, action: stri
 
     try {
       return await prisma.$transaction(async (tx) => {
+        //lock this item's row so two approvals for the same item run one after the other
+        await tx.$queryRaw`SELECT id  FROM "Item" WHERE id = ${item.id} FOR UPDATE`
         // 1. approve, but only if it is still PENDING (guards against double-click / cancel race)
         const approved = await tx.booking.updateMany({
           where: { id: bookingId, status: "PENDING" },

@@ -2,8 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verify } from 'jsonwebtoken'
-import BookingButton from "./[id]/BookingButton"
 import { formatRate } from "@/lib/format"
+import Link from "next/link"
+import { todayInNairobi } from "@/lib/dates"
+import ItemCover from "../components/ItemCover"
+
 //server component gets all the items for listing from across the platform and reduces the js bundle from the client component to the browser
 export default async function ItemsPage() {
   const cookiesStore = await cookies()
@@ -16,8 +19,9 @@ export default async function ItemsPage() {
     const items = await prisma.item.findMany({
   //gets all the items with status as approved only
     include: {
+      images: { orderBy: {position: 'asc'}, take: 1},
       bookings: {
-        where: { status: 'APPROVED' }
+        where: { status: 'APPROVED', endDate: { gte: todayInNairobi() } }
       }
     }
     })
@@ -38,13 +42,15 @@ export default async function ItemsPage() {
           : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
               {items.map(item => {
-                const isAvailable = item.bookings.length === 0
+                const hasBookings = item.bookings.length > 0
+                const isOwner = item.ownerId === decoded.userId
                 return (
                   <div key={item.id} className="card">
+                    <ItemCover url={item.images[0]?.url} title={item.title} />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                       <h3>{item.title}</h3>
-                      <span className={`badge ${isAvailable ? 'badge-available' : 'badge-booked'}`}>
-                        {isAvailable ? 'Available' : 'Unavailable'}
+                      <span className={`badge ${hasBookings ? 'badge-booked' : 'badge-available'}`}>
+                        {hasBookings ? 'Booked on some dates' : 'Available'}
                       </span>
                     </div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
@@ -53,12 +59,12 @@ export default async function ItemsPage() {
                     <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
                       {formatRate(item.dailyRate)}
                     </p>
-                    {isAvailable && item.ownerId !== decoded.userId
-                    ? <BookingButton itemId={item.id} />
-                    : isAvailable && item.ownerId === decoded.userId
+                    {isOwner
                       ? <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Your item</p>
-                      : <button disabled style={{ width: '100%', padding: '10px', background: 'var(--surface-2)', color: 'var(--text-muted)', borderRadius:'var(--radius)', border: 'none', cursor: 'not-allowed' }}>Unavailable</button>
-                     }  
+                      : <Link href={`/items/${item.id}`} className="btn-accent"
+                          style={{ display: 'block', textAlign: 'center' }}>
+                          View and request
+                        </Link>}
                   </div>
                 )
               })}

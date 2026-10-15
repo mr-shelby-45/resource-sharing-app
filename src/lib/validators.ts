@@ -21,6 +21,8 @@ export function validateRegisterInput(name: string, email: string, phone: string
 }
 
 const MAX_DAILY_RATE = 10000
+export const MAX_ITEM_IMAGES = 4
+const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com"
 
 export function validateItemInput(title: string, description: string, dailyRate: unknown) {
   if(!title?.trim() || !description?.trim()) {
@@ -46,5 +48,23 @@ export function validateBookingDates(startDate: Date, endDate: Date) {
   }
   if(countDays(startDate, endDate) > MAX_BOOKING_DAYS) {
     throw new Error(`You can borrow an item for at most ${MAX_BOOKING_DAYS} days`)
+  }
+}
+
+export function validateImageUrls(urls: string[]) {
+  if(urls.length > MAX_ITEM_IMAGES) {
+    throw new Error(`You can add at most ${MAX_ITEM_IMAGES} photos`)
+  }
+  for(const url of urls) {
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    } catch {
+      throw new Error("Invalid photo link")
+    }
+    // only accept photos that live in our own Blob store, never arbitrary links
+    if(parsed.protocol !== "https:" || !parsed.hostname.endsWith(BLOB_HOST_SUFFIX)) {
+      throw new Error("Invalid photo link")
+    }
   }
 }
