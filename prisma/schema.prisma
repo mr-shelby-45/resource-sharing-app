@@ -42,6 +42,7 @@ model Item {
   title       String
   description String
   dailyRate   Int     @default(0)
+  deletedAt   DateTime?
   images      ItemImage[]
   bookings    Booking[]
 }

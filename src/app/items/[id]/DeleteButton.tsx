@@ -1,6 +1,7 @@
 //file path -> src/app/items/[id]/DeleteButton.tsx
 'use server'
 
+import { userMessage } from '@/lib/errors'
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verify } from "jsonwebtoken";
@@ -20,9 +21,9 @@ export async function handleDelete(itemId: number) {
     if(!user) return { error: "User not found"}
 
     await deleteItem(itemId, user)
-  } catch(error: any) {
+  } catch(error) {
     console.error("Deletion error:", error)
-    return { error: "Failed to delete item. " + error.message }
+    return { error: userMessage(error, "Failed to delete item") }
   }
   redirect('/')
 }

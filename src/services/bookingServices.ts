@@ -7,10 +7,11 @@ import { Item, User } from "@/generated/prisma/client";
 import { AppError, isOverlapViolation, assertAllowed } from "@/lib/errors"
 import { BookingStatus } from "@/generated/prisma/client"
 
+export const OVERLAP_REJECTION_NOTE = "The item was booked by someone else for these dates."
+
 // Moves a booking from one status to another ONLY if it is still in the expected status.
 // If someone else changed it first, count is 0 and we stop instead of overwriting their change.
 // shown to a borrower whose pending request lost because another one was approved for the same days
-export const OVERLAP_REJECTION_NOTE = "The item was booked by someone else for these dates."
 
 async function moveStatus(
   bookingId: number,
@@ -29,6 +30,7 @@ async function moveStatus(
 }
 
 export async function createBooking(user: User, item: Item, startDate: Date, endDate: Date) {
+  if(item.deletedAt) throw new AppError(404, "Item not found")
   //validate the dates first, availability rest on them
   validateBookingDates(startDate, endDate)
   //check if there is an approved booking on the item trying to book
@@ -62,7 +64,7 @@ export async function approveBooking(user: User, bookingId: number, action: stri
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId}
   })
-  if(!booking) throw new Error('Booking not found')
+  if(!booking) throw new AppError(404, 'Booking not found')
   //find the associated item
   const item = await prisma.item.findUnique({
     where: { id: booking.itemId }
@@ -74,6 +76,7 @@ export async function approveBooking(user: User, bookingId: number, action: stri
   assertAllowed(permission)
 
   if (action === "approve") {
+    if (item.deletedAt) throw new AppError(409, "This item has been removed")
     if (booking.endDate < todayInNairobi()) throw new AppError(409, "This request has expired")
 
     // friendly check first, so the common case gets a clear message

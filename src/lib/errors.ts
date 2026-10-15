@@ -21,3 +21,11 @@ export function isOverlapViolation(e: unknown): boolean {
 export function assertAllowed(result: { allowed: boolean; message?: string }) {
   if (!result.allowed) throw new AppError(403, result.message ?? "You are not allowed to do that")
 }
+
+// For server actions and routes that talk to a person: show our own messages,
+// but never leak database or library error text. Unexpected errors get logged.
+export function userMessage(error: unknown, fallback: string): string {
+  if (error instanceof AppError) return error.message
+  console.error(fallback, error)
+  return fallback
+}

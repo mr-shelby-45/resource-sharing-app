@@ -40,7 +40,7 @@ export default async function HomePage() {
     if(user.canList) {
       //get all the items with the associated confirmed userId & whose booking status is approved
       const items = await prisma.item.findMany({
-        where: { ownerId: decoded.userId },
+        where: { ownerId: decoded.userId, deletedAt: null },
         include: {
           bookings: { where: { status: "APPROVED", endDate: { gte: todayInNairobi() } } },
           images: { orderBy: { position: 'asc' }, take: 1 },
@@ -65,7 +65,8 @@ export default async function HomePage() {
 
       const itemsToBook = await prisma.item.findMany({
         where: {
-          NOT: { ownerId: decoded.userId }
+          NOT: { ownerId: decoded.userId },
+          deletedAt: null,
         },
         include: { images: { orderBy: { position: 'asc'}, take: 1} }
       })
@@ -236,7 +237,8 @@ export default async function HomePage() {
       //gets all the available items, by filtering items whose status is 'approved'
       const items = await prisma.item.findMany({
         where: {
-          NOT: { ownerId: decoded.userId }
+          NOT: { ownerId: decoded.userId },
+          deletedAt: null
         },
         include: { images: { orderBy: { position: 'asc' }, take: 1 } },
       })

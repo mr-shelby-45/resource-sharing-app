@@ -19,7 +19,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
   const item = Number.isInteger(id)
     ? await prisma.item.findUnique({
-        where: { id },
+        where: { id, deletedAt: null },
         include: {
           images: { orderBy: { position: 'asc' } },
           // only approved bookings that haven't finished block dates

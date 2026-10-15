@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { addNewItem } from '@/services/itemServices'
+import { userMessage } from '@/lib/errors'
 
  async function addItem(prevState: any, formData: FormData) {
   'use server'
@@ -31,8 +32,8 @@ import { addNewItem } from '@/services/itemServices'
     }
     await addNewItem(user, newTitle, newDescription, dailyRate, imageUrls)
 
-  } catch(error: any) {
-    return { error: error.message || "Failed to add item"}
+  } catch(error) {
+    return { error: userMessage(error, "Failed to add item")}
   }
   redirect('/items')
 } 

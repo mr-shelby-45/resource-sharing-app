@@ -17,6 +17,7 @@ export default async function ItemsPage() {
   try {
     const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string}
     const items = await prisma.item.findMany({
+      where: { deletedAt: null },
   //gets all the items with status as approved only
     include: {
       images: { orderBy: {position: 'asc'}, take: 1},

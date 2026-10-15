@@ -1,6 +1,7 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { getCurrentUser } from '@/lib/currentUser'
 import { canAddItem } from '@/lib/permissions'
+import { AppError } from "@/lib/errors"
 
 // The browser asks this route for a short-lived upload token, then sends the
 // file straight to Vercel Blob. Our server never touches the image bytes.
@@ -14,9 +15,9 @@ export async function POST(request: Request) {
       onBeforeGenerateToken: async () => {
         // runs on the server before any token is issued
         const user = await getCurrentUser()
-        if (!user) throw new Error('Please log in')
+        if (!user) throw new AppError(401, 'Please log in')
         const permission = canAddItem(user)
-        if (!permission.allowed) throw new Error(permission.message)
+        if (!permission.allowed) throw new AppError(403, permission.message ?? 'Not allowed')
 
         return {
           allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
@@ -30,7 +31,10 @@ export async function POST(request: Request) {
     })
     return Response.json(json)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Upload failed'
-    return Response.json({ message }, { status: 400 })
+    if (error instanceof AppError) {
+      return Response.json({ message: error.message}, { status: error.status })
+    }
+    console.error('Upload error:', error)
+    return Response.json({ message: 'Upload failed'}, { status: 400})
   }
 }

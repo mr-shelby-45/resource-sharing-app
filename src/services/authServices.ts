@@ -39,7 +39,7 @@ export async function loginUser(email: string, password: string) {
     where: { email }
   })
   if(!user) {
-    throw new Error('Invalid credentials')
+    throw new AppError(401, 'Invalid credentials')
   }
   //verify the entered password
   const isMatch =  await bcrypt.compare(password, user.password)

@@ -1,6 +1,5 @@
 import { BookingStatus } from "@/generated/prisma/enums";
 import { canCreateBooking, canApproveBooking, canAddItem, canDeleteItem } from "./permissions";
-import { logDisallowedDynamicError } from "next/dist/server/app-render/dynamic-rendering";
 import { describe, expect, it } from "@jest/globals";
 
 //define admin user object
@@ -23,7 +22,8 @@ describe("canCreateBooking", () => {
       ownerId: 11,
       title : "pot",
       description: "metallic",
-      dailyRate: 100
+      dailyRate: 100,
+      deletedAt: null
     }
     const isAvailable = true
 
@@ -48,7 +48,8 @@ describe("canCreateBooking", () => {
       ownerId: 11,
       title : "pot",
       description: "metallic",
-      dailyRate: 120
+      dailyRate: 120,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canCreateBooking(user,item,    
@@ -73,7 +74,8 @@ describe("canCreateBooking", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 150
+      dailyRate: 150,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canCreateBooking(user,item,    
@@ -97,7 +99,8 @@ describe("canCreateBooking", () => {
       ownerId: 12,
       title : "pot",
       description: "metallic",
-      dailyRate: 200
+      dailyRate: 200,
+      deletedAt: null
     }
     const isAvailable = false
     const results = canCreateBooking(user,item,    
@@ -122,7 +125,8 @@ describe("canCreateBooking", () => {
       ownerId: 11,
       title : "pot",
       description: "metallic",
-      dailyRate: 150
+      dailyRate: 150,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canCreateBooking(user,item,    
@@ -207,7 +211,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 150
+      dailyRate: 150,
+      deletedAt: null
     }
     const booking = {
       id: 1,
@@ -239,7 +244,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 800
+      dailyRate: 800,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -271,7 +277,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 200
+      dailyRate: 200,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -303,7 +310,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 200
+      dailyRate: 200,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -335,7 +343,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 120
+      dailyRate: 120,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -367,7 +376,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 399
+      dailyRate: 399,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -399,7 +409,8 @@ describe("bookingapproval", () => {
       ownerId: 10,
       title : "lights",
       description: "metallic",
-      dailyRate: 200
+      dailyRate: 200,
+      deletedAt: null
     }
     const booking = {
       id: 1, 
@@ -434,7 +445,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 200
+      dailyRate: 200,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canDeleteItem(user, item, isAvailable)
@@ -456,7 +468,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 209
+      dailyRate: 209,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canDeleteItem(user, item, isAvailable)
@@ -478,7 +491,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 300
+      dailyRate: 300,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canDeleteItem(user, item, isAvailable)
@@ -500,7 +514,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 300
+      dailyRate: 300,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canDeleteItem(user, item, isAvailable)
@@ -522,7 +537,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 300
+      dailyRate: 300,
+      deletedAt: null
     }
     const isAvailable = false
     const results = canDeleteItem(user, item, isAvailable)
@@ -544,7 +560,8 @@ describe("allow deletion of an item from listing:", () => {
       ownerId: 10,
       title : "pot",
       description: "metallic",
-      dailyRate: 300
+      dailyRate: 300,
+      deletedAt: null
     }
     const isAvailable = true
     const results = canDeleteItem(user, item, isAvailable)
@@ -554,7 +571,7 @@ describe("allow deletion of an item from listing:", () => {
 
 describe("canCreateBooking availability", () => {
   const admin = { id: 1, name: "alice", phone: "797812893", email: "alice@gmail.com", password: "pass4", isAdmin: true, canList: true, canBorrow: true }
-  const item = { id: 1, ownerId: 2, title: "drill", description: "light use", dailyRate: 150 }
+  const item = { id: 1, ownerId: 2, title: "drill", description: "light use", dailyRate: 150, deletedAt: null }
 
   it("admin cannot book dates that are taken", () => {
     expect(canCreateBooking(admin, item, false)).toEqual({ allowed: false, message: "item is not available for booking" })

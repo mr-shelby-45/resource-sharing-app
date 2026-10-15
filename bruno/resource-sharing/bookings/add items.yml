@@ -13,9 +13,9 @@ http:
     type: json
     data: |-
       {
-      "title": "gas cooker",
-        "description": "4 cookers",
-        "dailyRate": 1000
+      "title": "Home theatre system",
+      "description": "4 speakers",
+      "dailyRate": 1000
       }
   auth: inherit
 
@@ -24,3 +24,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

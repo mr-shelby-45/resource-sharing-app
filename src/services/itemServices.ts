@@ -16,7 +16,8 @@ export async function addNewItem(user: User, title: string, description: string,
     where: {
       ownerId: user.id,
       title: title,
-      description: description
+      description: description,
+      deletedAt: null,
     }
   })
   if(currentItem) {
@@ -39,25 +40,31 @@ export async function deleteItem(itemId: number, user: User) {
     where: { id: itemId },
     include: { images: true }
   })
-  if(!item) throw new AppError(404, 'Item not found')
+  //an already-deleted item looks the same as one that never existed
+  if(!item || item.deletedAt) throw new AppError(404, 'Item not found')
 
-  //pending and approved bookings are live commitments to other people
-  const activeBooking = await prisma.booking.findFirst({
-    where: { itemId: item.id, status: { in: ["PENDING", "APPROVED"] } }
-  })
   //who may delete: role and ownership only (true = "ignore bookings here"), checked first so
   //people who may not delete it learn nothing about its bookings
   assertAllowed(canDeleteItem(user, item, true))
-  //live bookings block everyone, admins included, with a clear message
-  if(activeBooking) {
-    throw new AppError(409, "This item has pending or approved bookings. Reject or cancel them first.")
-  }
 
-  //only finished bookings are left (returned, cancelled, rejected); they go with the item
   const deleted = await prisma.$transaction(async (tx) => {
-    await tx.booking.deleteMany({ where: { itemId: item.id } })
-    //no ownerId filter: the permission check above already decided who may delete
-    return tx.item.delete({ where: { id: item.id } })
+    //lock the item row, the same way approvals do, so a booking cannot be approved mid-delete
+    await tx.$queryRaw`SELECT id FROM "Item" WHERE id = ${item.id} FOR UPDATE`
+
+    //pending and approved bookings are live commitments to other people; checked inside the lock
+    const activeBooking = await tx.booking.findFirst({
+      where: { itemId: item.id, status: { in: ["PENDING", "APPROVED"] } }
+    })
+    if(activeBooking) {
+      throw new AppError(409, "This item has pending or approved bookings. Reject or cancel them first.")
+    }
+
+    //bookings stay as history; only the photo records go
+    await tx.itemImage.deleteMany({ where: { itemId: item.id } })
+    return tx.item.update({
+      where: { id: item.id },
+      data: { deletedAt: new Date() }
+    })
   })
 
   //remove the photo files too; a failure here must not undo a delete that already happened
