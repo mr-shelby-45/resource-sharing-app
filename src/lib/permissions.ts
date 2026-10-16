@@ -1,5 +1,6 @@
 //user permissions will be filtered through here before the api routes
 import { User, Item, Booking } from '@/generated/prisma/client'
+import { todayInNairobi } from "@/lib/dates"
 
 //note: inorder not to bring about return bugs, then you have to deny the invalid cases first, start with the specific checks first then move on to broad checks
 //admin check in this case comes first, returns true then all the other conditions are skipped, therefore they have all the permissions
@@ -67,17 +68,34 @@ export function canDeleteItem(user: User, item: Item, isAvailable: boolean) {
   return { allowed: true }
 }
 
-export function canCancelBooking(user: User, booking: Booking) {
-  if(user.isAdmin) {
+// Who may cancel a booking, and when:
+// - PENDING: only the borrower withdraws it (the owner uses Reject instead). Admins may too.
+// - APPROVED: the borrower, the item owner or an admin, but only until the booking's start date
+//   has passed. After that the item is with the borrower, so the owner uses "Mark returned".
+// - anything else is already finished.
+// `today` is a parameter so tests can pick any day.
+export function canCancelBooking(user: User, booking: Booking, item: Item, today: Date = todayInNairobi()) {
+  const isBorrower = booking.borrowerId === user.id
+  const isOwner = item.ownerId === user.id
+
+  if(booking.status === "PENDING") {
+    if(isBorrower || user.isAdmin) {
+      return { allowed: true }
+    }
+    return { allowed: false, message: "You can only cancel your own bookings" }
+  }
+
+  if(booking.status === "APPROVED") {
+    if(!isBorrower && !isOwner && !user.isAdmin) {
+      return { allowed: false, message: "Only the borrower or the item owner can cancel this booking" }
+    }
+    if(booking.startDate < today) {
+      return { allowed: false, message: "This booking has already started. The owner can mark it as returned instead." }
+    }
     return { allowed: true }
   }
-  if(booking.borrowerId !== user.id) {
-    return { allowed: false, message: "You can only cancel your own bookings"}
-  }
-  if(booking.status !== "PENDING") {
-    return { allowed: false, message: "Only pending bookings can be cancelled" }
-  }
-  return { allowed: true }
+
+  return { allowed: false, message: "This booking can no longer be cancelled" }
 }
 
 export function canReturnItem(user: User, booking: Booking, item: Item) {

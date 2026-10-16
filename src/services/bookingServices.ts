@@ -17,7 +17,7 @@ async function moveStatus(
   bookingId: number,
   from: BookingStatus,
   to: BookingStatus,
-  extra: { returnedAt?: Date } = {}
+  extra: { returnedAt?: Date; decisionNote?: string } = {}
 ) {
   const { count } = await prisma.booking.updateMany({
     where: { id: bookingId, status: from },
@@ -155,8 +155,25 @@ export async function cancelBooking(user: User, bookingId: number) {
     where: { id: bookingId }
   })
   if(!booking) throw new AppError(404, "Booking not found")
-  //check permission to cancel and the booking status(status === 'PENDING') with canCancelBooking function from permissions.ts
-  const permission = canCancelBooking(user, booking)
+
+  const item = await prisma.item.findUnique({
+    where: { id: booking.itemId }
+  })
+  if(!item) throw new AppError(404, "Associated item not found!")
+
+  //who may cancel, and when, is decided in permissions.ts
+  const permission = canCancelBooking(user, booking, item)
   assertAllowed(permission)
-  return moveStatus(bookingId, "PENDING", "CANCELLED")
+
+  //when an approved booking is cancelled, the other side is told who did it
+  let decisionNote: string | undefined
+  if(booking.status === "APPROVED") {
+    if(user.id === item.ownerId) decisionNote = "Cancelled by the item owner."
+    else if(user.id === booking.borrowerId) decisionNote = "Cancelled by the borrower."
+    else decisionNote = "Cancelled by an administrator."
+  }
+
+  //the booking must still be in the status we just checked, otherwise someone changed it first
+  //the dates open up again by themselves: only APPROVED bookings block dates
+  return moveStatus(bookingId, booking.status, "CANCELLED", { decisionNote })
 }

@@ -18,7 +18,7 @@ const LABELS: Record<Action, string> = {
   approve: 'Approve',
   reject: 'Reject',
   return: 'Mark returned',
-  cancel: 'Cancel request',
+  cancel: 'Cancel',
 }
 
 const STYLES: Record<Action, string> = {
@@ -34,6 +34,7 @@ export default function BookingActions({ bookingId, actions }: Props) {
   const [error, setError] = useState('')
 
   async function handleAction(action: Action) {
+    if(action === 'cancel' && !window.confirm('cancel this booking?')) return
     setError('')
     setBusy(action)
     try {

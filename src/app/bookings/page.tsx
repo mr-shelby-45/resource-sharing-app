@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/currentUser'
 import BookingActions from './BookingActions'
 import BookingDetails from '../components/BookingDetails'
+import { canCancelBooking } from '@/lib/permissions'
 
 export default async function BookingsPage() {
   const user = await getCurrentUser()
@@ -35,7 +36,7 @@ export default async function BookingsPage() {
 
     const actions: ('approve' | 'reject' | 'return' | 'cancel')[] = []
     if (booking.status === 'PENDING' && isOwner) actions.push('approve', 'reject')
-    if (booking.status === 'PENDING' && (isBorrower || user.isAdmin)) actions.push('cancel')
+    if (canCancelBooking(user, booking, booking.item).allowed) actions.push('cancel')
     if (booking.status === 'APPROVED' && isOwner) actions.push('return')
 
     return (

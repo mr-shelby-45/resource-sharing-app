@@ -1,6 +1,7 @@
 import { BookingStatus } from "@/generated/prisma/enums";
 import { canCreateBooking, canApproveBooking, canAddItem, canDeleteItem } from "./permissions";
 import { describe, expect, it } from "@jest/globals";
+import { canCancelBooking } from "./permissions";
 
 //define admin user object
 //allows admin to bypass all checks
@@ -578,5 +579,61 @@ describe("canCreateBooking availability", () => {
   })
   it("admin can still book free dates", () => {
     expect(canCreateBooking(admin, item, true)).toEqual({ allowed: true })
+  })
+})
+
+describe("canCancelBooking", () => {
+  const TODAY = new Date("2026-11-10T00:00:00.000Z")
+  const day = (iso: string) => new Date(`${iso}T00:00:00.000Z`)
+
+  const user = (o: any = {}) => ({
+    id: 1, name: "u", email: "u@x.com", phone: "0700000000", password: "x",
+    isAdmin: false, canList: false, canBorrow: true, ...o
+  }) as any
+  const item = (o: any = {}) => ({
+    id: 5, ownerId: 2, title: "pot", description: "d", dailyRate: 100, deletedAt: null, ...o
+  }) as any
+  const booking = (o: any = {}) => ({
+    id: 9, itemId: 5, borrowerId: 3, status: "PENDING",
+    startDate: day("2026-11-12"), endDate: day("2026-11-14"),
+    dailyRate: 100, returnedAt: null, decisionNote: null, ...o
+  }) as any
+
+  it("lets the borrower withdraw a pending request", () => {
+    expect(canCancelBooking(user({ id: 3 }), booking(), item(), TODAY)).toEqual({ allowed: true })
+  })
+  it("does not let the owner cancel a pending request (they use Reject)", () => {
+    expect(canCancelBooking(user({ id: 2 }), booking(), item(), TODAY).allowed).toBe(false)
+  })
+  it("does not let strangers cancel anything", () => {
+    expect(canCancelBooking(user({ id: 99 }), booking(), item(), TODAY).allowed).toBe(false)
+    expect(canCancelBooking(user({ id: 99 }), booking({ status: "APPROVED" }), item(), TODAY).allowed).toBe(false)
+  })
+  it("lets the borrower cancel an approved booking before it starts", () => {
+    expect(canCancelBooking(user({ id: 3 }), booking({ status: "APPROVED" }), item(), TODAY)).toEqual({ allowed: true })
+  })
+  it("lets the owner cancel an approved booking before it starts", () => {
+    expect(canCancelBooking(user({ id: 2 }), booking({ status: "APPROVED" }), item(), TODAY)).toEqual({ allowed: true })
+  })
+  it("allows cancelling on the start day itself", () => {
+    const b = booking({ status: "APPROVED", startDate: day("2026-11-10") })
+    expect(canCancelBooking(user({ id: 3 }), b, item(), TODAY).allowed).toBe(true)
+  })
+  it("blocks cancelling an approved booking once it has started", () => {
+    const b = booking({ status: "APPROVED", startDate: day("2026-11-09") })
+    const result = canCancelBooking(user({ id: 3 }), b, item(), TODAY)
+    expect(result.allowed).toBe(false)
+    expect(result.message).toContain("already started")
+  })
+  it("lets an admin cancel pending and approved bookings, but still follows the status rules", () => {
+    const admin = user({ id: 50, isAdmin: true })
+    expect(canCancelBooking(admin, booking(), item(), TODAY).allowed).toBe(true)
+    expect(canCancelBooking(admin, booking({ status: "APPROVED" }), item(), TODAY).allowed).toBe(true)
+    expect(canCancelBooking(admin, booking({ status: "RETURNED" }), item(), TODAY).allowed).toBe(false)
+  })
+  it("blocks finished bookings for everyone", () => {
+    for (const status of ["RETURNED", "CANCELLED", "REJECTED"]) {
+      expect(canCancelBooking(user({ id: 3 }), booking({ status }), item(), TODAY).allowed).toBe(false)
+    }
   })
 })
