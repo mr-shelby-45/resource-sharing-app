@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import Toaster from "./components/Toaster";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const body = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const heading = Source_Serif_4({
+  variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Resource Sharing",
-  description: "Peer to peer item lending platform",
+  title: "Jirani",
+  description: "Borrow and lend with your neighbours.",
 };
 
 export default function RootLayout({
@@ -25,11 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${body.variable} ${heading.variable} antialiased`}>
         <Navbar />
-        {children}
+        <main>{children}</main>
+        <Toaster />
       </body>
     </html>
   );

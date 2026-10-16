@@ -1,20 +1,30 @@
 'use client'
+import { useState } from 'react'
 
 export default function LogoutButton() {
+  const [error, setError] = useState('')
+
   async function handleLogout() {
-    const res = await fetch('/api/auth/logout', {
-      method: 'POST',
-      headers: { 'Content-Type' : 'application/json'}
+    setError('')
+    try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
       })
-    if(res.ok) {
-      alert('logout successful!')
-      window.location.href = ('/login')
-    } else {
-      const data = await res.json()
-      alert(data.message)
+      if (res.ok) {
+        window.location.href = '/login'
+      } else {
+        setError('Could not log out. Try again.')
+      }
+    } catch {
+      setError('No connection. Try again.')
     }
   }
+
   return (
-    <button onClick={handleLogout} className="btn-outline" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Log out</button>
+    <>
+      <button type="button" onClick={handleLogout} className="btn-outline">Log out</button>
+      {error && <span role="alert" className="small" style={{ color: 'var(--danger)' }}>{error}</span>}
+    </>
   )
 }

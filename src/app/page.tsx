@@ -1,336 +1,230 @@
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { verify } from 'jsonwebtoken'
-import { prisma } from '@/lib/prisma'
-import BookingActions from './bookings/BookingActions'
 import Link from 'next/link'
-import DeleteButtonClient from './items/[id]/DeleteClient'
-import { formatRate } from '@/lib/format'
-import BookingDetails from './components/BookingDetails'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/currentUser'
 import { todayInNairobi } from '@/lib/dates'
-import ItemCover from './components/ItemCover'
+import { formatDay, formatDateRange, formatRate } from '@/lib/format'
+import { canCancelBooking } from '@/lib/permissions'
+import BookingActions from './bookings/BookingActions'
+import BookingDetails from './components/BookingDetails'
+import DeleteButtonClient from './items/[id]/DeleteClient'
+import StatusPill from './components/StatusPill'
+import { ExpandRow, LinkRow } from './components/LedgerRow'
+
+const firstName = (name: string) => name.split(' ')[0]
+
+// "Friday 16 October", in Nairobi time
+const todayLabel = () =>
+  new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Nairobi' }).format(new Date())
 
 export default async function HomePage() {
-  //cookies are not manually forwarded.
-  const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
+  // not logged in, or the account no longer exists
+  const user = await getCurrentUser()
+  if (!user) redirect('/login')
 
-  if(!token) redirect('/login')
-  
-  try {
-    const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number, role: string }
-    //confirm if the user exists in the database with the decoded userId from the cookie
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
-    })
-    if(!user) redirect('/login')
-
-    if(!user.canBorrow && !user.canList) {
-      return(
-        <div className='page'>
-          <div>
-            <h1>Hey, {user.name}</h1>
-            <p style={{ color: 'var(--text-muted)', marginTop: '6px'}}> You have been banned from this website </p>
-            <p style={{ color: 'var(--text-muted)', marginTop: '6px'}}> Contact admin </p>
-          </div>
-        </div>
-      )
-    }
-    
-    if(user.canList) {
-      //get all the items with the associated confirmed userId & whose booking status is approved
-      const items = await prisma.item.findMany({
-        where: { ownerId: decoded.userId, deletedAt: null },
-        include: {
-          bookings: { where: { status: "APPROVED", endDate: { gte: todayInNairobi() } } },
-          images: { orderBy: { position: 'asc' }, take: 1 },
-        }
-      })
-      //get all booked items, waiting for approval or rejection
-      const bookedItems = await prisma.booking.findMany({
-        where: {
-          status: 'PENDING',
-          item: { ownerId: decoded.userId }
-        },
-        include: { item: true, borrower: true }
-      })
-      //owner's can now book
-      const bookings = await prisma.booking.findMany({
-        where: { borrowerId: decoded.userId,
-          status: { notIn: ['RETURNED', 'CANCELLED']}
-         },
-        include: { item: true },
-        orderBy: { startDate: 'asc'}
-      })
-
-      const itemsToBook = await prisma.item.findMany({
-        where: {
-          NOT: { ownerId: decoded.userId },
-          deletedAt: null,
-        },
-        include: { images: { orderBy: { position: 'asc'}, take: 1} }
-      })
-      //owners
-      //ternary operator to check if the returned array from the db is null or there are react elements to render
-      //{/*add a new item if there are no items yet*/}
-      //displays all items their own showing if the item is booked or otherwise
-      return (
-        <div className="page">
-          <div style={{ marginBottom: '32px' }}>
-            <h1>Welcome back, {user.name}</h1>
-            <p style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
-              Manage your items and booking requests
-            </p>
-            <a href="/items" style={{ 
-              display: 'inline-block',
-              marginTop: '12px',
-              color: 'var(--primary)',
-              fontWeight: '500',
-              fontSize: '0.95rem'
-            }}>
-              Browse all community items →
-            </a>
-          </div>
-            {/**items that you own */}
-          <section style={{ marginBottom: '48px' }}>
-            <h2 style={{ marginBottom: '20px' }}>Your Items</h2>
-            {items.length === 0
-              ? (
-                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: '1.1rem', marginBottom: '16px' }}>No items listed yet</p>
-                  <a href="/items/new">
-                    <button className="btn-primary">Add your first item</button>
-                  </a>
-                </div>
-              )
-              : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {items.map(item => {
-                    const isBooked = item.bookings.length > 0
-                    return (
-                      <div key={item.id} className="card">
-                        <ItemCover url={item.images[0]?.url} title={item.title} />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <h3>{item.title}</h3>
-                          <span className={`badge ${isBooked ? 'badge-booked' : 'badge-available'}`}>
-                            {isBooked ? 'Booked' : 'Available'}
-                          </span>
-                        </div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.description}</p>
-                        <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
-                          {formatRate(item.dailyRate)}
-                        </p>
-                        <DeleteButtonClient itemId={item.id}/>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            }
-          </section>
-            {/*display all the pending requests and the borrower's details */}
-          <section style={{ marginBottom: '48px'}}>
-            <h2 style={{ marginBottom: '20px' }}>Pending Requests</h2>
-            {bookedItems.length === 0
-              ? (
-                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                  <p>No pending booking requests</p>
-                </div>
-              )
-              : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {bookedItems.map(booking => (
-                    <div key={booking.id} className="card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                        <div>
-                          <h3 style={{ marginBottom: '4px' }}>{booking.item.title}</h3>
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{booking.item.description}</p>
-                          <BookingDetails booking={booking}/>
-                        </div>
-                        <span className="badge badge-pending">Pending</span>
-                      </div>
-                      <div style={{ 
-                        background: 'var(--surface-2)', 
-                        borderRadius: '8px', 
-                        padding: '12px 16px',
-                        marginBottom: '16px'
-                      }}>
-                        <p style={{ fontWeight: '500', marginBottom: '4px' }}>{booking.borrower.name}</p>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.borrower.email}</p>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.borrower.phone}</p>
-                      </div>
-                      <BookingActions bookingId={booking.id} actions={['approve', 'reject']}/>
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-          </section>
-          {/**to display the items that are pending for approval */}
-          <section style={{ marginBottom: '48px'}}>
-              <h2 style={{ marginBottom: '20px' }}>My Bookings</h2>
-              {bookings.length === 0
-                ? (
-                  <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                    <p>No bookings yet. Request an item above.</p>
-                  </div>
-                )
-                : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {bookings.map(booking => (
-                      <div key={booking.id} className="card" style={{ display: 'flex', justifyContent: 'space-between',               alignItems: 'center' }}>
-                        <div>
-                          <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            {booking.item.description}
-                          </p>
-                          <BookingDetails booking={booking} />
-                        </div>
-                        <span className={`badge badge-${booking.status.toLowerCase()}`}>
-                          {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )
-              }
-          </section>
-          {/*for user.canList to book items that are available*/}
-          <section style={{ marginBottom: '48px' }}>
-            <h2 style={{ marginBottom: '20px' }}>Available Items</h2>
-            {itemsToBook.length === 0
-              ? (
-                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                  <p>No items available right now. Check back soon.</p>
-                </div>
-              )
-              : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {itemsToBook.map(item => (
-                    <div key={item.id} className="card">
-                      <ItemCover url={item.images[0]?.url} title={item.title} />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <h3>{item.title}</h3>
-                        <span className="badge badge-available">Available</span>
-                      </div>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                        {item.description}
-                      </p>
-                      <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
-                        {formatRate(item.dailyRate)}
-                      </p>
-                      <Link href={`/items/${item.id}`} className="btn-accent"
-                        style={{ display: 'block', textAlign: 'center' }}>
-                        View and request
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-          </section>
-        </div>
-       )
-    }
-
-    if(user.canBorrow) {
-      //gets all the available items, by filtering items whose status is 'approved'
-      const items = await prisma.item.findMany({
-        where: {
-          NOT: { ownerId: decoded.userId },
-          deletedAt: null
-        },
-        include: { images: { orderBy: { position: 'asc' }, take: 1 } },
-      })
-      const bookings = await prisma.booking.findMany({
-        where: { borrowerId: decoded.userId,
-          status: {notIn: ['RETURNED', 'CANCELLED']}
-         },
-        include: { item: true },
-        orderBy: { startDate: 'asc' }
-      })
-      return (
-        <div className="page">
-          <div style={{ marginBottom: '32px' }}>
-            <h1>Welcome back, {user.name}</h1>
-            <p style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
-              Browse available items and track your bookings
-            </p>
-            <a href="/items" style={{ 
-              display: 'inline-block',
-              marginTop: '12px',
-              color: 'var(--primary)',
-              fontWeight: '500',
-              fontSize: '0.95rem'
-            }}>
-              Browse all community items →
-            </a>
-          </div>
-
-          <section style={{ marginBottom: '48px' }}>
-            <h2 style={{ marginBottom: '20px' }}>Available Items</h2>
-            {items.length === 0
-              ? (
-                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                  <p>No items available right now. Check back soon.</p>
-                </div>
-              )
-              : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {items.map(item => (
-                    <div key={item.id} className="card">
-                      <ItemCover url={item.images[0]?.url} title={item.title} />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <h3>{item.title}</h3>
-                        <span className="badge badge-available">Available</span>
-                      </div>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                        {item.description}
-                      </p>
-                      <p style={{ fontWeight: '600', color: 'var(--primary)', marginBottom: '16px' }}>
-                        {formatRate(item.dailyRate)}
-                      </p>
-                      <Link href={`/items/${item.id}`} className="btn-accent"
-                        style={{ display: 'block', textAlign: 'center' }}>
-                        View and request
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-          </section>
-          <section>
-            <h2 style={{ marginBottom: '20px' }}>My Bookings</h2>
-            {bookings.length === 0
-              ? (
-                <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-                  <p>No bookings yet. Request an item above.</p>
-                </div>
-              )
-              : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {bookings.map(booking => (
-                    <div key={booking.id} className="card" style={{ display: 'flex', justifyContent:'space-between',alignItems:'center' }}>
-                      <div>
-                        <p style={{ fontWeight: '500' }}>{booking.item.title}</p>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{booking.item.description}</p>
-                        <BookingDetails booking={booking} />
-                      </div>
-                      <span className={`badge badge-${booking.status.toLowerCase()}`}>
-                        {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                )
-              }
-          </section>
-        </div>
-      )
-    }
-  } catch (e){
-    console.error(e)
-    redirect('/login')
+  if (!user.canBorrow && !user.canList) {
+    return (
+      <div className="wrap">
+        <h1>Hello, {firstName(user.name)}</h1>
+        <p className="muted" style={{ marginTop: 'var(--space-2)' }}>
+          Your account cannot borrow or list right now. Contact the community admin.
+        </p>
+      </div>
+    )
   }
+
+  const today = todayInNairobi()
+  const isOwner = user.canList
+
+  // Owners only: items they list, requests waiting for them, items currently out
+  const myItems = isOwner
+    ? await prisma.item.findMany({
+        where: { ownerId: user.id, deletedAt: null },
+        include: { bookings: { where: { status: 'APPROVED', endDate: { gte: today } }, select: { id: true } } },
+      })
+    : []
+  const decisions = isOwner
+    ? await prisma.booking.findMany({
+        where: { status: 'PENDING', item: { ownerId: user.id } },
+        include: { item: true, borrower: { select: { name: true, email: true, phone: true } } },
+        orderBy: { startDate: 'asc' },
+      })
+    : []
+  const lentOut = isOwner
+    ? await prisma.booking.findMany({
+        where: { status: 'APPROVED', item: { ownerId: user.id } },
+        include: { item: true, borrower: { select: { name: true } } },
+        orderBy: { startDate: 'asc' },
+      })
+    : []
+
+  // Everyone: requests they made, and the newest items from neighbours
+  const myRequests = await prisma.booking.findMany({
+    where: { borrowerId: user.id, status: { notIn: ['RETURNED', 'CANCELLED'] } },
+    include: { item: { include: { owner: { select: { name: true } } } } },
+    orderBy: { startDate: 'asc' },
+  })
+  const available = await prisma.item.findMany({
+    where: { NOT: { ownerId: user.id }, deletedAt: null },
+    include: {
+      images: { orderBy: { position: 'asc' }, take: 1 },
+      bookings: { where: { status: 'APPROVED', endDate: { gte: today } }, select: { id: true } },
+      owner: { select: { name: true } },
+    },
+    orderBy: { id: 'desc' },
+    take: 6,
+  })
+
+  const lede = isOwner
+    ? decisions.length
+      ? `${decisions.length} ${decisions.length === 1 ? 'request needs' : 'requests need'} your decision.`
+      : 'Nothing needs your decision right now.'
+    : 'Find something to borrow, and keep track of your requests.'
+
+  const decisionsSection = (
+    <section className="section" aria-labelledby="h-decide">
+      <h2 id="h-decide">Needs your decision</h2>
+      {decisions.length === 0 ? (
+        <p className="empty">No requests are waiting. When a neighbour asks to borrow something of yours, it shows up here.</p>
+      ) : (
+        <ul className="rows panel">
+          {decisions.map(b => (
+            <ExpandRow
+              key={b.id}
+              title={b.item.title}
+              meta={`${b.borrower.name} · ${formatDateRange(b.startDate, b.endDate)}`}
+              status={<StatusPill status={b.status} as="owner" />}
+            >
+              <BookingDetails booking={b} />
+              <div className="contact">
+                <b>{b.borrower.name}</b>
+                <span>{b.borrower.email}</span>
+                <span>{b.borrower.phone}</span>
+              </div>
+              <BookingActions bookingId={b.id} actions={['approve', 'reject']} who={firstName(b.borrower.name)} />
+            </ExpandRow>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+
+  const lentOutSection = lentOut.length > 0 && (
+    <section className="section" aria-labelledby="h-out">
+      <h2 id="h-out">With neighbours now</h2>
+      <ul className="rows">
+        {lentOut.map(b => (
+          <ExpandRow
+            key={b.id}
+            title={b.item.title}
+            meta={`${b.borrower.name} has it · ${formatDateRange(b.startDate, b.endDate)}${b.endDate < today ? ` · was due back ${formatDay(b.endDate)}` : ''}`}
+            status={<StatusPill status={b.status} as="owner" />}
+          >
+            <BookingDetails booking={b} />
+            <BookingActions bookingId={b.id} actions={['return']} who={firstName(b.borrower.name)} />
+          </ExpandRow>
+        ))}
+      </ul>
+    </section>
+  )
+
+  const requestsSection = (
+    <section className="section" aria-labelledby="h-mine">
+      <h2 id="h-mine">My requests</h2>
+      {myRequests.length === 0 ? (
+        <p className="empty">You have not asked to borrow anything yet. Pick something from the list below.</p>
+      ) : (
+        <ul className="rows">
+          {myRequests.map(b => {
+            const ownerName = firstName(b.item.owner.name)
+            const cancel = canCancelBooking(user, b, b.item).allowed
+            return (
+              <ExpandRow
+                key={b.id}
+                title={b.item.title}
+                meta={`From ${b.item.owner.name} · ${formatDateRange(b.startDate, b.endDate)}`}
+                status={<StatusPill status={b.status} as="borrower" name={ownerName} />}
+              >
+                <BookingDetails booking={b} noteBy={ownerName} />
+                {cancel && <BookingActions bookingId={b.id} actions={['cancel']} who={ownerName} />}
+              </ExpandRow>
+            )
+          })}
+        </ul>
+      )}
+    </section>
+  )
+
+  const itemsSection = isOwner && (
+    <section className="section" aria-labelledby="h-items">
+      <div className="section-head">
+        <h2 id="h-items">Your items</h2>
+        <Link href="/items/new" className="btn-outline">Add item</Link>
+      </div>
+      {myItems.length === 0 ? (
+        <p className="empty">You have not listed anything yet. <Link href="/items/new">Add your first item</Link>.</p>
+      ) : (
+        <ul className="rows">
+          {myItems.map(item => (
+            <ExpandRow
+              key={item.id}
+              title={item.title}
+              meta={formatRate(item.dailyRate)}
+              status={item.bookings.length > 0 ? <span className="pill">Taken on some dates</span> : null}
+            >
+              <p>{item.description}</p>
+              <div className="actions">
+                <Link href={`/items/${item.id}`} className="btn-outline">Open item</Link>
+                <DeleteButtonClient itemId={item.id} />
+              </div>
+            </ExpandRow>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+
+  const availableSection = (
+    <section className="section" aria-labelledby="h-available">
+      <div className="section-head">
+        <h2 id="h-available">From your neighbours</h2>
+        <Link href="/items" className="btn-outline">Browse all items</Link>
+      </div>
+      {available.length === 0 ? (
+        <p className="empty">No items from your neighbours yet. Check back soon.</p>
+      ) : (
+        <ul className="rows">
+          {available.map(item => (
+            <LinkRow
+              key={item.id}
+              href={`/items/${item.id}`}
+              title={item.title}
+              description={item.description}
+              imageUrl={item.images[0]?.url}
+              meta={
+                <>
+                  <span>{formatRate(item.dailyRate)} · Lent by {firstName(item.owner.name)}</span>
+                  {item.bookings.length > 0 && <span className="pill">Taken on some dates</span>}
+                </>
+              }
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+
+  return (
+    <div className="wrap">
+      <p className="label">{todayLabel()}</p>
+      <h1 style={{ marginTop: 'var(--space-1)' }}>Hello, {firstName(user.name)}</h1>
+      <p className="muted" style={{ marginTop: 'var(--space-1)' }}>{lede}</p>
+
+      {isOwner && decisionsSection}
+      {isOwner && lentOutSection}
+      {requestsSection}
+      {itemsSection}
+      {availableSection}
+    </div>
+  )
 }
