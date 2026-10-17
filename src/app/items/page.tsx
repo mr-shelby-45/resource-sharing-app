@@ -31,7 +31,7 @@ export default async function ItemsPage() {
             {items.map(item => {
               const hasBookings = item.bookings.length > 0
               return (
-                <ItemCard key={item.id} item={item}
+                <ItemCard key={item.id} item={item} href={item.ownerId === user.id ? undefined : `/items/${item.id}`}
                   badge={{ tone: hasBookings ? 'booked' : 'available', label: hasBookings ? 'Booked on some dates' : 'Available' }}>
                   {item.ownerId === user.id
                     ? <p className="muted text-sm">Your item</p>

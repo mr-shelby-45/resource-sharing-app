@@ -349,3 +349,10 @@ button:disabled {
 
 .photo-grid { border-radius: 12px; transition: background 0.15s ease, outline-color 0.15s ease; outline: 2px dashed transparent; outline-offset: 4px; }
 .photo-grid-drag { background: var(--success-bg); outline-color: var(--primary); }
+
+/* ---------- clickable item cards ---------- */
+.item-card-link { display: block; color: inherit; border-radius: 8px; }
+.item-card-link img { transition: transform 0.25s ease; }
+.item-card-link:hover img { transform: scale(1.03); }
+.item-card-title { color: inherit; }
+.item-card-title:hover { color: var(--primary); }

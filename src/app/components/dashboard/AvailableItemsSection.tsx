@@ -18,7 +18,7 @@ export default async function AvailableItemsSection({ userId }: { userId: number
         : (
           <div className="card-grid">
             {items.map(item => (
-              <ItemCard key={item.id} item={item} badge={{ tone: 'available', label: 'Available' }}>
+              <ItemCard key={item.id} item={item} href={`/items/${item.id}`} badge={{ tone: 'available', label: 'Available' }}>
                 <Link href={`/items/${item.id}`} className="btn btn-accent btn-block">View and request</Link>
               </ItemCard>
             ))}
