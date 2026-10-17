@@ -294,3 +294,23 @@ button:disabled {
 
 .notice { background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-5); }
 .notice a { color: var(--warning-text); font-weight: 600; }
+
+/* ---------- forms ---------- */
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+.field label { display: block; margin-bottom: 6px; font-size: var(--text-sm); font-weight: 500; }
+.field-hint { margin-top: 6px; font-size: var(--text-sm); color: var(--danger); }
+.form-error { color: var(--danger); font-size: var(--text-sm); padding: 10px 14px; background: var(--danger-bg); border-radius: 8px; }
+.btn-lg { padding: 14px; font-size: var(--text-base); margin-top: var(--space-2); }
+
+.auth-wrap { display: flex; justify-content: center; }
+.auth-card { width: 100%; max-width: 420px; }
+.auth-intro { margin: var(--space-2) 0 var(--space-6); }
+.auth-switch { text-align: center; margin-top: var(--space-5); font-size: var(--text-sm); }
+
+.password-field { position: relative; }
+.password-field input { padding-right: 64px; }
+.password-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  background: transparent; color: var(--primary); padding: 6px 10px; font-size: var(--text-sm);
+}
+.password-toggle:hover { background: var(--surface-2); }

@@ -1,48 +1,41 @@
-import { redirect } from "next/navigation"
-import RegistrationForm from "./RegisterForm"
-import { registerUser } from "@/services/authServices"
-import { signToken } from "@/lib/auth"
-import { cookies } from "next/headers"
-import { validateRegisterInput } from "@/lib/validators"
+import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+import RegistrationForm from './RegisterForm'
+import { registerUser } from '@/services/authServices'
+import { signToken } from '@/lib/auth'
+import { validateRegisterInput, validatePasswordsMatch } from '@/lib/validators'
+import { userMessage } from '@/lib/errors'
+import type { FormState } from '@/lib/formState'
 
-async function register(prevState: any, formData: FormData) {
+async function register(_prevState: FormState, formData: FormData): Promise<FormState> {
   'use server'
+  const name = String(formData.get('name') ?? '')
+  const email = String(formData.get('email') ?? '')
+  const phone = String(formData.get('phone') ?? '')
+  const password = String(formData.get('password') ?? '')
+  const confirmPassword = String(formData.get('confirmPassword') ?? '')
   try {
-    const name = formData.get('name') as string
-    const email = formData.get('email') as string
-    const phone = formData.get('phone') as string
-    const password = formData.get('password') as string
-    //data validation
     validateRegisterInput(name, email, phone, password)
-    // register user via authServices
+    // the browser checks this too, but the server must not trust the browser
+    validatePasswordsMatch(password, confirmPassword)
     const user = await registerUser(name, email, phone, password)
-    const signedToken = signToken(user.id)
     const cookiesStore = await cookies()
-    cookiesStore.set('token', signedToken, {
+    cookiesStore.set('token', signToken(user.id), {
       httpOnly: true,
       path: '/',
       maxAge: 604800,
-      sameSite: 'strict'
+      sameSite: 'strict',
     })
-  } catch(error) {
-    return { error: error instanceof Error ? error.message: 'Registration failed' }
+  } catch (error) {
+    // refill everything except the passwords
+    return { error: userMessage(error, 'Registration failed'), values: { name, email, phone } }
   }
-  //on successful reg redirect to the homepage
   redirect('/')
 }
-//<!--react elements have to be uppercase -->
-export default function registrationPage() {
+
+export default function RegistrationPage() {
   return (
     <div className="page">
-      <h1 style={{ marginBottom: '8px' }}>Jirani</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '0.95rem' }}>
-        Community resource sharing platform
-      </p>
-      <hr style={{ 
-        border: 'none', 
-        borderTop: '1px solid var(--border)', 
-        marginBottom: '32px' 
-      }} />
       <RegistrationForm action={register} />
     </div>
   )

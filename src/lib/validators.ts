@@ -21,6 +21,12 @@ export function validateRegisterInput(name: string, email: string, phone: string
   }
 }
 
+export function validatePasswordsMatch(password: string, confirmPassword: string) {
+  if(password !== confirmPassword) {
+    throw new AppError( 400, "Passwords do not match")
+  }
+}
+
 const MAX_DAILY_RATE = 10000
 export const MAX_ITEM_IMAGES = 4
 const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com"

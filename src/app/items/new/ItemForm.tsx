@@ -1,5 +1,7 @@
 'use client'
 import { useActionState, useState } from "react"
+import Link from 'next/link'
+import type { FormState } from '@/lib/formState'
 import { upload } from "@vercel/blob/client"
 //uses server action to get data from the form, details for the new item to be added 
 
@@ -21,7 +23,7 @@ async function resizeImage(file: File, maxSide = 1600): Promise<File> {
 
 
 type Props = {
-  action: (prevState: any, formData: FormData) => Promise<{ error: string} | void>
+  action: (prevState: FormState, formData: FormData) => Promise<FormState>
 }
 //exports item's details to page.tsx, server component, checks duplicate and adds item to db
 export default function ItemForm({ action }: Props) {
@@ -159,7 +161,7 @@ export default function ItemForm({ action }: Props) {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          <a href="/" style={{ color: 'var(--primary)', fontWeight: '500' }}>Back to dashboard</a>
+          <Link href="/" className="strong">Back to dashboard</Link>
         </p>
       </div>
     </div>

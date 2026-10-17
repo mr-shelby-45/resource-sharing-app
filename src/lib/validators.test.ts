@@ -5,6 +5,7 @@ import {
   validateItemInput,
   validateImageUrls,
   validateRegisterInput,
+  validatePasswordsMatch,
   validateLoginInput,
   MAX_ITEM_IMAGES,
 } from "@/lib/validators"
@@ -164,5 +165,20 @@ describe("validateLoginInput", () => {
     expect(() => validateLoginInput("", "x")).toThrow("required")
     expect(() => validateLoginInput("a@b.com", "")).toThrow("required")
     expect(() => validateLoginInput("ab.com", "x")).toThrow("email")
+  })
+})
+
+describe("validatePasswordsMatch", () => {
+  test("accepts identical passwords", () => {
+    expect(() => validatePasswordsMatch("password123", "password123")).not.toThrow()
+  })
+  test("rejects different passwords with a 400", () => {
+    expect(() => validatePasswordsMatch("password123", "password124")).toThrow("Passwords do not match")
+  })
+  test("is case sensitive", () => {
+    expect(() => validatePasswordsMatch("Password123", "password123")).toThrow()
+  })
+  test("rejects an empty confirmation", () => {
+    expect(() => validatePasswordsMatch("password123", "")).toThrow()
   })
 })
