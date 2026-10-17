@@ -7,7 +7,6 @@ export default function LogoutButton() {
       headers: { 'Content-Type' : 'application/json'}
       })
     if(res.ok) {
-      alert('logout successful!')
       window.location.href = ('/login')
     } else {
       const data = await res.json()
