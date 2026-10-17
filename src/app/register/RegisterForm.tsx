@@ -1,72 +1,68 @@
 'use client'
-import { useActionState } from "react"
+import { useActionState, useState } from 'react'
+import Link from 'next/link'
+import PasswordInput from '../components/PasswordInput'
+import type { FormState } from '@/lib/formState'
 
 type Props = {
-  action: (prevState: any, formData: FormData) => Promise<{ error: string } | void> 
+  action: (prevState: FormState, formData: FormData) => Promise<FormState>
 }
-export default function RegistrationForm( { action } : Props) {
+
+export default function RegistrationForm({ action }: Props) {
   const [state, formAction] = useActionState(action, null)
+  const [mismatch, setMismatch] = useState(false)
+
+  // Runs on every keystroke. Marks the confirm box invalid while it differs from the password,
+  // which makes the browser block the submit and keeps everything typed.
+  function checkMatch(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value
+    const confirm = form.elements.namedItem('confirmPassword') as HTMLInputElement
+    const differs = confirm.value !== '' && confirm.value !== password
+    confirm.setCustomValidity(differs ? 'Passwords do not match' : '')
+    setMismatch(differs)
+  }
 
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 64px)',
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "center",
-      padding: "24px"
-    }}>
-      <div className="card" 
-      style={{ 
-        width: "100%", 
-        maxWidth: '420px'
-        }}>
-        <h1 style={{ marginBottom: '8px' }}>Welcome to Jirani</h1>
-        <p style={{ color: "var(--text-muted)", marginBottom: '32px', fontSize: '0.95rem' }}>
-          Register your Jirani account
-          </p>
-        <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
-            fontWeight: '500' }}>
-              Name
-            </label>
-            <input name="name" type="name" placeholder="Name" required/>
+    <div className="auth-wrap">
+      <div className="card auth-card">
+        <h1>Welcome to Jirani</h1>
+        <p className="muted auth-intro">Register your Jirani account</p>
+
+        <form action={formAction} onInput={checkMatch} className="form">
+          <div className="field">
+            <label htmlFor="name">Name</label>
+            <input id="name" name="name" type="text" autoComplete="name" placeholder="Name"
+              defaultValue={state?.values?.name} required />
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
-            fontWeight: '500' }}>
-              Email
-            </label>
-            <input name="email" type="email" placeholder="Email" required/>
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input id="email" name="email" type="email" autoComplete="email" placeholder="Email"
+              defaultValue={state?.values?.email} required />
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
-              fontWeight: '500' }}>
-                Phone
-              </label>
-            <input name="phone" type="text" placeholder="Phone" required/>
+          <div className="field">
+            <label htmlFor="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="0712345678"
+              defaultValue={state?.values?.phone} required />
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem',
-            fontWeight: '500' }}>
-              Password
-            </label>
-            <input name="password" type="password" placeholder="Password" required/>
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <PasswordInput name="password" placeholder="At least 8 characters" autoComplete="new-password" minLength={8} />
           </div>
-          {state?.error && (
-              <p style={{ color: '#c0392b', fontSize: '0.9rem', padding: '10px 14px', 
-                background: '#fdecea', borderRadius: '8px' }}>
-                {state.error}
-              </p>
-          )}
-          <button type="submit" className="btn-primary" style={{ marginTop: '12px', padding: '14px', fontSize: '1rem' }}>
-            Register
-          </button>
-          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            Have an account? Sign in instead  <a href="/login" style={{ color: 'var(--primary)', fontWeight: '500' }}
-          >Sign in</a>
-          </p>
+          <div className="field">
+            <label htmlFor="confirmPassword">Confirm password</label>
+            <PasswordInput name="confirmPassword" placeholder="Type it again" autoComplete="new-password" />
+            {mismatch && <p className="field-hint" role="alert">Passwords do not match</p>}
+          </div>
+
+          {state?.error && <p className="form-error" role="alert">{state.error}</p>}
+
+          <button type="submit" className="btn-primary btn-lg">Register</button>
         </form>
+
+        <p className="auth-switch muted">
+          Already have an account? <Link href="/login" className="strong">Sign in</Link>
+        </p>
       </div>
     </div>
   )

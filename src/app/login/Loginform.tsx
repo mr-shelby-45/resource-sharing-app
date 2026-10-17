@@ -1,59 +1,41 @@
 'use client'
 import { useActionState } from 'react'
+import Link from 'next/link'
+import PasswordInput from '../components/PasswordInput'
+import type { FormState } from '@/lib/formState'
 
 type Props = {
-  action: (prevState: any, formData: FormData) => Promise<{ error: string } | void>
+  action: (prevState: FormState, formData: FormData) => Promise<FormState>
 }
 
 export default function LoginForm({ action }: Props) {
   const [state, formAction] = useActionState(action, null)
 
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 64px)',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      padding: '24px'
-    }}>
-      <div className="card" 
-      style={{ 
-        width: '100%', 
-        maxWidth: '420px' 
-      }}>
-        <h1 style={{ marginBottom: '8px' }}>Welcome back</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '0.95rem' }}>
-          Sign in to your Jirani account
-        </p>
+    <div className="auth-wrap">
+      <div className="card auth-card">
+        <h1>Welcome back</h1>
+        <p className="muted auth-intro">Sign in to your Jirani account</p>
 
-        <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '500' }}>
-              Email
-            </label>
-            <input name="email" type="email" placeholder="you@example.com" required/>
+        <form action={formAction} className="form">
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com"
+              defaultValue={state?.values?.email} required />
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '500' }}>
-              Password
-            </label>
-            <input name="password" type="password" placeholder="Your password" required/>
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <PasswordInput name="password" placeholder="Your password" autoComplete="current-password" />
           </div>
 
-          {state?.error && (
-            <p style={{ color: '#c0392b', fontSize: '0.9rem', padding: '10px 14px', background: '#fdecea', borderRadius: '8px' }}>
-              {state.error}
-            </p>
-          )}
+          {state?.error && <p className="form-error" role="alert">{state.error}</p>}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '8px', padding: '14px', fontSize: '1rem' }}>
-            Sign in
-          </button>
+          <button type="submit" className="btn-primary btn-lg">Sign in</button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          Don't have an account? <a href="/register" style={{ color: 'var(--primary)', fontWeight: '500' }}>Register</a>
+        <p className="auth-switch muted">
+          Don&apos;t have an account? <Link href="/register" className="strong">Register</Link>
         </p>
       </div>
     </div>

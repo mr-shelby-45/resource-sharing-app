@@ -1,118 +1,47 @@
-import { cookies } from "next/headers"
-import { prisma } from "@/lib/prisma"
-import { verify } from "jsonwebtoken"
 import Link from 'next/link'
-import LogoutButton from "./LogoutButton"
+import { getCurrentUser } from '@/lib/currentUser'
+import { countOwnerActions } from '@/lib/ownerActions'
+import LogoutButton from './LogoutButton'
 
+// Top bar. Brand and page links on the left, who you are and logout on the right.
 export default async function NavBar() {
-  const cookiesStore = await cookies()
-  const token = cookiesStore.get('token')?.value
+  const user = await getCurrentUser()
+  // owners see how many things are waiting for them on Home
+  const actionCount = user?.canList ? await countOwnerActions(user.id) : 0
 
-  const guestNav = (
-    <nav style={{
-      background: 'var(--surface)',
-      borderBottom: '1px solid var(--border)',
-      padding: '0 24px',
-      height: '64px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      boxShadow: 'var(--shadow)'
-    }}>
-      <Link href="/" style={{
-        fontFamily: 'Playfair Display, serif',
-        fontSize: '1.3rem',
-        fontWeight: '700',
-        color: 'var(--primary)',
-        letterSpacing: '-0.5px'
-      }}>
-        Jirani
-      </Link>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <Link href="/login">
-          <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
-            Login
-          </button>
-        </Link>
-        <Link href="/register">
-          <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
-            Register
-          </button>
-        </Link>
+  return (
+    <nav className="navbar">
+      <div className="navbar-inner">
+      <div className="navbar-group">
+        <Link href="/" className="navbar-brand">Jirani</Link>
+        {user && (
+          <>
+            <Link href="/" className="navbar-link">
+              Home
+              {actionCount > 0 && <span className="navbar-count" aria-label={`${actionCount} need your action`}>{actionCount}</span>}
+            </Link>
+            <Link href="/items" className="navbar-link">Browse</Link>
+            <Link href="/bookings" className="navbar-link">Requests</Link>
+          </>
+        )}
+      </div>
+
+      <div className="navbar-group">
+        {user
+          ? (
+            <>
+              <span className="navbar-user">{user.name}</span>
+              <LogoutButton />
+            </>
+          )
+          : (
+            <>
+              <Link href="/login" className="btn btn-outline btn-sm">Login</Link>
+              <Link href="/register" className="btn btn-primary btn-sm">Register</Link>
+            </>
+          )}
+      </div>
       </div>
     </nav>
   )
-
-  if (!token) return guestNav
-
-  try {
-    const decoded = verify(token, process.env.JWT_SECRET!) as { userId: number }
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
-    })
-
-    if (!user) return guestNav
-
-    return (
-      <nav style={{
-        background: 'var(--surface)',
-        borderBottom: '1px solid var(--border)',
-        padding: '0 24px',
-        height: '64px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        boxShadow: 'var(--shadow)'
-      }}>
-        <Link href="/" style={{
-          fontFamily: 'Playfair Display, serif',
-          fontSize: '1.3rem',
-          fontWeight: '700',
-          color: 'var(--primary)',
-          letterSpacing: '-0.5px'
-        }}>
-          Jirani
-        </Link>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <Link href="/" style={{
-            color: 'var(--text-muted)',
-            fontSize: '0.95rem',
-            fontWeight: '500'
-          }}>
-            Home
-          </Link>
-          {user.canList && (
-            <Link href="/items/new" style={{
-              color: 'var(--text-muted)',
-              fontSize: '0.95rem',
-              fontWeight: '500'
-            }}>
-              Add Item
-            </Link>
-          )}
-          <div style={{
-            width: '1px',
-            height: '20px',
-            background: 'var(--border)'
-          }} />
-          <span style={{
-            fontSize: '0.85rem',
-            color: 'var(--text-muted)',
-            fontWeight: '500'
-          }}>
-            {user.name}
-          </span>
-          <LogoutButton />
-        </div>
-      </nav>
-    )
-  } catch {
-    return guestNav
-  }
 }

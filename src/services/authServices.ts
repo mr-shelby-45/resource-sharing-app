@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import bcrypt, { hash } from 'bcryptjs'
 import { validateLoginInput, validateRegisterInput } from "@/lib/validators"
-import { AppError, assertAllowed } from "@/lib/errors"
+import { AppError } from "@/lib/errors"
 
 export async function registerUser(name: string, email: string, phone: string, password: string) {
   //data validation

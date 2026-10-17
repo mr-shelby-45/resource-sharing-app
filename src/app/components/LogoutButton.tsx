@@ -7,7 +7,6 @@ export default function LogoutButton() {
       headers: { 'Content-Type' : 'application/json'}
       })
     if(res.ok) {
-      alert('logout successful!')
       window.location.href = ('/login')
     } else {
       const data = await res.json()
@@ -15,6 +14,6 @@ export default function LogoutButton() {
     }
   }
   return (
-    <button onClick={handleLogout} className="btn-outline" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Log out</button>
+    <button onClick={handleLogout} className="btn btn-outline btn-sm">Log out</button>
   )
 }

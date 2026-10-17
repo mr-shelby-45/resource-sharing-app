@@ -6,8 +6,9 @@ import { verify } from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { addNewItem } from '@/services/itemServices'
 import { userMessage } from '@/lib/errors'
+import type { FormState } from '@/lib/formState'
 
- async function addItem(prevState: any, formData: FormData) {
+ async function addItem(_prevState: FormState, formData: FormData): Promise<FormState> {
   'use server'
   //cookies have to be forwarded manually
   const cookiesStore = await cookies()

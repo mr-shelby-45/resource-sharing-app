@@ -586,18 +586,18 @@ describe("canCancelBooking", () => {
   const TODAY = new Date("2026-11-10T00:00:00.000Z")
   const day = (iso: string) => new Date(`${iso}T00:00:00.000Z`)
 
-  const user = (o: any = {}) => ({
+  const user = (o: Record<string, unknown> = {}) => ({
     id: 1, name: "u", email: "u@x.com", phone: "0700000000", password: "x",
     isAdmin: false, canList: false, canBorrow: true, ...o
-  }) as any
-  const item = (o: any = {}) => ({
+  }) as never
+  const item = (o: Record<string, unknown> = {}) => ({
     id: 5, ownerId: 2, title: "pot", description: "d", dailyRate: 100, deletedAt: null, ...o
-  }) as any
-  const booking = (o: any = {}) => ({
+  }) as never
+  const booking = (o: Record<string, unknown> = {}) => ({
     id: 9, itemId: 5, borrowerId: 3, status: "PENDING",
     startDate: day("2026-11-12"), endDate: day("2026-11-14"),
     dailyRate: 100, returnedAt: null, decisionNote: null, ...o
-  }) as any
+  }) as never
 
   it("lets the borrower withdraw a pending request", () => {
     expect(canCancelBooking(user({ id: 3 }), booking(), item(), TODAY)).toEqual({ allowed: true })
