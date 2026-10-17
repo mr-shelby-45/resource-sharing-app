@@ -11,6 +11,7 @@ export default async function NavBar() {
 
   return (
     <nav className="navbar">
+      <div className="navbar-inner">
       <div className="navbar-group">
         <Link href="/" className="navbar-brand">Jirani</Link>
         {user && (
@@ -39,6 +40,7 @@ export default async function NavBar() {
               <Link href="/register" className="btn btn-primary btn-sm">Register</Link>
             </>
           )}
+      </div>
       </div>
     </nav>
   )
