@@ -17,7 +17,8 @@ export default async function MyItemsSection({ userId }: { userId: number }) {
   })
 
   return (
-    <Section title="Your Items">
+    <Section title="Your Items"
+      action={<Link href="/items/new" className="btn btn-primary btn-sm">Add item</Link>}>
       {items.length === 0
         ? (
           <EmptyState message="No items listed yet">

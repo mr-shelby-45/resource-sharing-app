@@ -1,8 +1,15 @@
-// a titled block of a page; the spacing between blocks comes from the .section class
-export default function Section({ title, children }: { title: string; children: React.ReactNode }) {
+// A titled block of a page. `action` is an optional button or link shown at the far right of the title row.
+export default function Section({ title, action, children }: {
+  title: string
+  action?: React.ReactNode
+  children: React.ReactNode
+}) {
   return (
     <section className="section">
-      <h2 className="section-title">{title}</h2>
+      <div className="section-head">
+        <h2>{title}</h2>
+        {action}
+      </div>
       {children}
     </section>
   )
