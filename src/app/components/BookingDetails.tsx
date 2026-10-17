@@ -10,12 +10,10 @@ export default function BookingDetails({ booking }: Props) {
   const days = countDays(booking.startDate, booking.endDate)
   const fee = calculateFee(booking.dailyRate, booking.startDate, booking.endDate)
   return (
-    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+    <div className="booking-details muted text-sm">
       <p>{formatDateRange(booking.startDate, booking.endDate)} ({days} {days === 1 ? 'day' : 'days'})</p>
-      <p style={{ fontWeight: 500 }}>
-        {fee === 0 ? 'Free' : `Fee: KES ${fee.toLocaleString('en-KE')}`}
-      </p>
-      {booking.decisionNote && <p style={{ fontStyle: 'italic' }}>{booking.decisionNote}</p>}
+      <p className="fee">{fee === 0 ? 'Free' : `Fee: KES ${fee.toLocaleString('en-KE')}`}</p>
+      {booking.decisionNote && <p className="note">{booking.decisionNote}</p>}
     </div>
   )
 }
