@@ -9,7 +9,10 @@ import BookingRow from '../components/BookingRow'
 import PageHeader from '../components/PageHeader'
 import Section from '../components/Section'
 import EmptyState from '../components/EmptyState'
+import Link from 'next/link'
 import { canCancelBooking } from '@/lib/permissions'
+import { isOverdue } from '@/lib/bookingTasks'
+import { countOwnerActions } from '@/lib/ownerActions'
 
 type Action = 'approve' | 'reject' | 'return' | 'cancel'
 
@@ -27,6 +30,8 @@ export default async function BookingsPage() {
     orderBy: { startDate: 'asc' },   // soonest first
   })
 
+  const actionCount = user.canList ? await countOwnerActions(user.id) : 0
+
   type B = (typeof bookings)[number]
 
   const isFinished = (b: B) => b.status === 'RETURNED' || b.status === 'CANCELLED'
@@ -34,8 +39,12 @@ export default async function BookingsPage() {
   // the owner side: my item, or an admin looking at someone else's booking
   const isOnMyItem = (b: B) => !isMine(b) && (b.item.ownerId === user.id || user.isAdmin)
 
-  const needDecision = bookings.filter(b => b.status === 'PENDING' && isOnMyItem(b))
+  // On Home the owner answers new requests and overdue returns. Here we show what is out and what they asked for.
   const lentOut = bookings.filter(b => b.status === 'APPROVED' && isOnMyItem(b))
+  // admins moderate pending requests on other people's items from here (their own items are answered on Home)
+  const adminPending = user.isAdmin
+    ? bookings.filter(b => b.status === 'PENDING' && !isMine(b) && b.item.ownerId !== user.id)
+    : []
   const myRequests = bookings.filter(b => isMine(b) && !isFinished(b))
   const history = bookings.filter(isFinished).reverse()   // newest first
 
@@ -43,7 +52,9 @@ export default async function BookingsPage() {
 
   const row = (b: B, actions: Action[], opts?: { contact?: boolean }) => (
     <BookingRow key={b.id} booking={b}
-      subtitle={isMine(b) ? b.item.description : `Requested by ${b.borrower.name}`}
+      subtitle={isMine(b)
+        ? b.item.description
+        : isOverdue(b) ? `Requested by ${b.borrower.name} · Return overdue` : `Requested by ${b.borrower.name}`}
       details={opts?.contact && (
         <div className="panel">
           <p className="strong">{b.borrower.name}</p>
@@ -56,22 +67,24 @@ export default async function BookingsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Requests" subtitle="Decide on requests for your items, and follow the ones you made" />
+      <PageHeader title="Requests" subtitle="Items you have lent out and the requests you made" />
 
-      {(user.canList || user.isAdmin || needDecision.length > 0 || lentOut.length > 0) && (
-        <>
-          <Section title="Need your decision">
-            {needDecision.length === 0
-              ? <EmptyState message="Nothing waiting for you." />
-              : <div className="stack">{needDecision.map(b => row(b, ['approve', 'reject'], { contact: true }))}</div>}
-          </Section>
+      {actionCount > 0 && (
+        <p className="notice">
+          {actionCount} {actionCount === 1 ? 'thing needs' : 'things need'} your action. <Link href="/">Go to Home →</Link>
+        </p>
+      )}
 
-          {lentOut.length > 0 && (
-            <Section title="Lent out">
-              <div className="stack">{lentOut.map(b => row(b, [...(['return'] as Action[]), ...cancelAction(b)]))}</div>
-            </Section>
-          )}
-        </>
+      {adminPending.length > 0 && (
+        <Section title="Pending on other items (admin)">
+          <div className="stack">{adminPending.map(b => row(b, ['approve', 'reject'], { contact: true }))}</div>
+        </Section>
+      )}
+
+      {lentOut.length > 0 && (
+        <Section title="Lent out">
+          <div className="stack">{lentOut.map(b => row(b, ['return', ...cancelAction(b)]))}</div>
+        </Section>
       )}
 
       <Section title="Your requests">

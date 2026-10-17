@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/currentUser'
 import PageHeader from './components/PageHeader'
 import MyItemsSection from './components/dashboard/MyItemsSection'
-import PendingRequestsSection from './components/dashboard/PendingRequestsSection'
+import ActionNeededSection from './components/dashboard/ActionNeededSection'
 import MyBookingsSection from './components/dashboard/MyBookingsSection'
 import AvailableItemsSection from './components/dashboard/AvailableItemsSection'
 
@@ -32,8 +32,8 @@ export default async function HomePage() {
       {user.canList
         ? (
           <>
+            <ActionNeededSection userId={user.id} />
             <MyItemsSection userId={user.id} />
-            <PendingRequestsSection userId={user.id} />
             <MyBookingsSection userId={user.id} />
             <AvailableItemsSection userId={user.id} />
           </>
