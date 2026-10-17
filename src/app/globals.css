@@ -346,3 +346,6 @@ button:disabled {
 @media (max-width: 400px) {
   .photo-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+.photo-grid { border-radius: 12px; transition: background 0.15s ease, outline-color 0.15s ease; outline: 2px dashed transparent; outline-offset: 4px; }
+.photo-grid-drag { background: var(--success-bg); outline-color: var(--primary); }

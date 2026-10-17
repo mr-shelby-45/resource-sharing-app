@@ -6,6 +6,7 @@ import { upload } from "@vercel/blob/client"
 //uses server action to get data from the form, details for the new item to be added 
 
 const MAX_PHOTOS = 4
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 type Photo = { url: string; preview: string }
 
 async function resizeImage(file: File, maxSide = 1600): Promise<File> {
@@ -32,11 +33,31 @@ export default function ItemForm({ action }: Props) {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [uploading, setUploading] = useState(false)
   const [photoError, setPhotoError] = useState('')
+  const [dragging, setDragging] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
 
-  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
-  const files = Array.from(e.target.files ?? [])
-  e.target.value = ''   // lets the same file be picked again later
+  // picking files with the button
+  function handlePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = ''   // lets the same file be picked again later
+    addFiles(files)
+  }
+
+  // dropping files onto the photo area
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    setDragging(false)
+    if (uploading || photos.length >= MAX_PHOTOS) return
+    const dropped = Array.from(e.dataTransfer.files)
+    const images = dropped.filter(f => ACCEPTED_TYPES.includes(f.type))
+    if (images.length === 0) {
+      setPhotoError('Only JPG, PNG or WebP photos can be added.')
+      return
+    }
+    addFiles(images)
+  }
+
+  async function addFiles(files: File[]) {
   if (files.length === 0) return
   setPhotoError('')
 
@@ -97,7 +118,11 @@ export default function ItemForm({ action }: Props) {
               Show the item and any wear, so borrowers know what to expect.
             </p>
 
-            <div className="photo-grid">
+            <div
+              className={`photo-grid${dragging ? ' photo-grid-drag' : ''}`}
+              onDragOver={e => { e.preventDefault(); if (!uploading && photos.length < MAX_PHOTOS) setDragging(true) }}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false) }}
+              onDrop={handleDrop}>
               {photos.map(photo => (
                 <div key={photo.url} className="photo-tile">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -118,14 +143,14 @@ export default function ItemForm({ action }: Props) {
                     <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
                     <circle cx="12" cy="13" r="3.5" />
                   </svg>
-                  <span>{uploading ? 'Uploading…' : photos.length === 0 ? 'Add photos' : 'Add more'}</span>
+                  <span>{uploading ? 'Uploading…' : photos.length === 0 ? 'Add photos or drop them here' : 'Add more'}</span>
                 </button>
               )}
             </div>
 
             {/* the real file input stays hidden; the tile above opens it */}
-            <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
-              onChange={handleFiles} disabled={uploading} />
+            <input ref={fileInput} type="file" accept={ACCEPTED_TYPES.join(',')} multiple hidden
+              onChange={handlePicked} disabled={uploading} />
 
             {photoError && <p className="field-hint">{photoError}</p>}
           </div>
