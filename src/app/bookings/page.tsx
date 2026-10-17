@@ -3,12 +3,13 @@
 
 //server component: fetches the viewer's bookings and decides which buttons each one gets
 
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/currentUser'
 import BookingActions from './BookingActions'
-import BookingDetails from '../components/BookingDetails'
+import BookingRow from '../components/BookingRow'
+import PageHeader from '../components/PageHeader'
+import EmptyState from '../components/EmptyState'
 import { canCancelBooking } from '@/lib/permissions'
 
 export default async function BookingsPage() {
@@ -40,60 +41,34 @@ export default async function BookingsPage() {
     if (booking.status === 'APPROVED' && isOwner) actions.push('return')
 
     return (
-      <div key={booking.id} className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: actions.length ? '16px' : '0' }}>
-          <div>
-            <Link href={`/items/${booking.item.id}`} style={{ fontWeight: '500' }}>{booking.item.title}</Link>
-            {!isBorrower && (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Requested by {booking.borrower.name}</p>
-            )}
-            <BookingDetails booking={booking} />
-          </div>
-          <span className={`badge badge-${booking.status.toLowerCase()}`}>
-            {booking.status.charAt(0) + booking.status.slice(1).toLowerCase()}
-          </span>
-        </div>
-        {actions.length > 0 && <BookingActions bookingId={booking.id} actions={actions} />}
-      </div>
+      <BookingRow key={booking.id} booking={booking}
+        subtitle={isBorrower ? undefined : `Requested by ${booking.borrower.name}`}
+        actions={actions.length > 0 ? <BookingActions bookingId={booking.id} actions={actions} /> : undefined} />
     )
   }
 
   return (
     <div className="page">
-      <div style={{ marginBottom: '32px' }}>
-        <h1>Bookings</h1>
-        <p style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
-          Requests you made and requests on your items
-        </p>
-      </div>
+      <PageHeader title="Bookings" subtitle="Requests you made and requests on your items" />
 
       {bookings.length === 0
-        ? (
-          <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
-            <p>No bookings yet.</p>
-          </div>
-        )
+        ? <EmptyState message="No bookings yet." />
         : (
           <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="stack">
               {current.length === 0
-                ? <p style={{ color: 'var(--text-muted)' }}>Nothing active right now.</p>
+                ? <p className="muted">Nothing active right now.</p>
                 : current.map(renderBooking)}
             </div>
 
             {history.length > 0 && (
-              <details style={{ marginTop: '32px' }}>
-                <summary style={{ cursor: 'pointer', color: 'var(--text-muted)' }}>
-                  History ({history.length})
-                </summary>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-                  {history.map(renderBooking)}
-                </div>
+              <details className="history">
+                <summary className="muted">History ({history.length})</summary>
+                <div className="stack history-list">{history.map(renderBooking)}</div>
               </details>
             )}
           </>
-        )
-      }
+        )}
     </div>
   )
 }
