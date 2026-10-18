@@ -29,21 +29,17 @@ export default async function HomePage() {
         <Link href="/items" className="link-strong">Browse all community items →</Link>
       </PageHeader>
 
-      {user.canList
-        ? (
-          <>
-            <ActionNeededSection userId={user.id} />
-            <MyItemsSection userId={user.id} />
-            <MyBookingsSection userId={user.id} />
-            <AvailableItemsSection userId={user.id} />
-          </>
-        )
-        : (
-          <>
-            <AvailableItemsSection userId={user.id} />
-            <MyBookingsSection userId={user.id} />
-          </>
-        )}
+      {/* tasks on the left, things on the right; stacks on phones */}
+      <div className="home-layout">
+        <div>
+          {user.canList && <ActionNeededSection userId={user.id} />}
+          <MyBookingsSection userId={user.id} />
+        </div>
+        <div>
+          {user.canList && <MyItemsSection userId={user.id} />}
+          <AvailableItemsSection userId={user.id} />
+        </div>
+      </div>
     </div>
   )
 }

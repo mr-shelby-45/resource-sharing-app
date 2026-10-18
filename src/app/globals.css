@@ -14,6 +14,8 @@
   --border: #e2ddd5;
   --text-muted: #6b6560;
   --radius: 12px;
+  --content-width: 1280px;
+  --gutter: 16px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -182,8 +184,8 @@ button:disabled {
 }
 
 .page {
-  padding: 40px 24px;
-  max-width: 1100px;
+  padding: var(--space-6) var(--gutter);
+  max-width: var(--content-width);
   margin: 0 auto;
 }
 
@@ -232,7 +234,8 @@ button:disabled {
 .stack-lg { display: flex; flex-direction: column; gap: var(--space-5); }
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-5); }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 320px)); gap: var(--space-5); }
+@media (max-width: 560px) { .card-grid { grid-template-columns: 1fr; } }
 .page-narrow { max-width: 640px; }
 
 .section { margin-bottom: var(--space-7); }
@@ -266,7 +269,6 @@ button:disabled {
 .btn-block { display: block; width: 100%; }
 
 @media (max-width: 600px) {
-  .page { padding-left: var(--space-4); padding-right: var(--space-4); }
   h1 { font-size: 1.6rem; }
   .section { margin-bottom: var(--space-6); }
 }
@@ -274,10 +276,10 @@ button:disabled {
 /* ---------- navbar ---------- */
 .navbar {
   position: sticky; top: 0; z-index: 100;
-  height: 64px; padding: 0 var(--space-5);
+  height: 64px;
   background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: var(--shadow);
 }
-.navbar-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1100px; height: 100%; margin: 0 auto; }
+.navbar-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--content-width); height: 100%; margin: 0 auto; padding: 0 var(--gutter); }
 .navbar-group { display: flex; align-items: center; gap: var(--space-5); }
 .navbar-brand { font-family: var(--font-heading), Georgia, serif; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; margin-right: var(--space-2); }
 .navbar-link { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
@@ -287,7 +289,6 @@ button:disabled {
 .btn-sm { padding: 8px 16px; font-size: var(--text-sm); }
 
 @media (max-width: 600px) {
-  .navbar { padding: 0 var(--space-4); }
   .navbar-group { gap: var(--space-3); }
   .navbar-user { display: none; }
 }
@@ -356,3 +357,29 @@ button:disabled {
 .item-card-link:hover img { transform: scale(1.03); }
 .item-card-title { color: inherit; }
 .item-card-title:hover { color: var(--primary); }
+
+/* ---------- responsive page width ---------- */
+@media (min-width: 640px) { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 40px; } }
+
+/* ---------- home: tasks on the left, things on the right (one column on phones) ---------- */
+.home-layout { display: grid; gap: 0 var(--space-7); }
+@media (min-width: 1024px) {
+  .home-layout { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+}
+
+/* ---------- item page: photos left, details and booking form right ---------- */
+.item-layout { display: grid; gap: var(--space-5); }
+@media (min-width: 900px) {
+  .item-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; gap: var(--space-6); }
+  .item-info { position: sticky; top: 88px; }
+}
+
+/* ---------- photos ---------- */
+.item-cover { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.item-cover img, .gallery-main img { object-fit: cover; }
+.gallery-main { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--surface-2); }
+.gallery-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-top: var(--space-2); }
+.gallery-thumb { position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; border-radius: 8px; border: 2px solid transparent; }
+.gallery-thumb.active { border-color: var(--primary); }
+.gallery-thumb img { object-fit: cover; }
