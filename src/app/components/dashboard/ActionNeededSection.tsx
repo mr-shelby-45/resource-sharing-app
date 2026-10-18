@@ -19,7 +19,7 @@ export default async function ActionNeededSection({ userId }: { userId: number }
 
   return (
     <Section title={`Needs your action (${bookings.length})`}>
-      <div className="stack">
+      <div className="rows">
         {bookings.map(booking => {
           const overdue = isOverdue(booking)
           return (
@@ -28,11 +28,11 @@ export default async function ActionNeededSection({ userId }: { userId: number }
                 ? `Return overdue since ${formatDay(booking.endDate)}`
                 : `Requested by ${booking.borrower.name}`}
               details={
-                <div className="panel">
-                  <p className="strong">{booking.borrower.name}</p>
-                  <p className="muted text-sm">{booking.borrower.email}</p>
-                  <p className="muted text-sm">{booking.borrower.phone}</p>
-                </div>
+                <p className="text-sm contact">
+                  <span className="strong">{booking.borrower.name}</span>{' · '}
+                  <a href={`mailto:${booking.borrower.email}`}>{booking.borrower.email}</a>{' · '}
+                  <a href={`tel:${booking.borrower.phone}`}>{booking.borrower.phone}</a>
+                </p>
               }
               actions={<BookingActions bookingId={booking.id} actions={overdue ? ['return'] : ['approve', 'reject']} />} />
           )

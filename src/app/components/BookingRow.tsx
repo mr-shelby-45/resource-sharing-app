@@ -12,18 +12,18 @@ type Props = {
     item: { id: number; title: string; deletedAt: Date | null }
   }
   subtitle?: string           // e.g. "Requested by Mac" or the item description
-  details?: React.ReactNode   // extra block under the row, e.g. the borrower's contact panel
+  details?: React.ReactNode   // extra block under the row, e.g. the borrower's contact
   actions?: React.ReactNode   // buttons
 }
 
-// the one booking card used on the dashboard and the bookings page
+// one booking as a hairline list row, used on Home and the Requests page
 export default function BookingRow({ booking, subtitle, details, actions }: Props) {
   const { item } = booking
   return (
-    <article className="card stack">
+    <article className="row-item stack">
       <div className="row-between">
         <div>
-          <h3>
+          <h3 className="row-title">
             {item.deletedAt
               ? <>{item.title} <span className="muted text-sm">(removed)</span></>
               : <Link href={`/items/${item.id}`}>{item.title}</Link>}

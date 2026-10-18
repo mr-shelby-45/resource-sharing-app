@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/currentUser'
 import { countOwnerActions } from '@/lib/ownerActions'
 import LogoutButton from './LogoutButton'
+import NavLink from './NavLink'
+import ThemeToggle from './ThemeToggle'
 
 // Top bar. Brand and page links on the left, who you are and logout on the right.
 export default async function NavBar() {
@@ -16,12 +18,12 @@ export default async function NavBar() {
         <Link href="/" className="navbar-brand">Jirani</Link>
         {user && (
           <>
-            <Link href="/" className="navbar-link">
+            <NavLink href="/">
               Home
               {actionCount > 0 && <span className="navbar-count" aria-label={`${actionCount} need your action`}>{actionCount}</span>}
-            </Link>
-            <Link href="/items" className="navbar-link">Browse</Link>
-            <Link href="/bookings" className="navbar-link">Requests</Link>
+            </NavLink>
+            <NavLink href="/items">Browse</NavLink>
+            <NavLink href="/bookings">Requests</NavLink>
           </>
         )}
       </div>
@@ -30,12 +32,14 @@ export default async function NavBar() {
         {user
           ? (
             <>
+              <ThemeToggle />
               <span className="navbar-user">{user.name}</span>
               <LogoutButton />
             </>
           )
           : (
             <>
+              <ThemeToggle />
               <Link href="/login" className="btn btn-outline btn-sm">Login</Link>
               <Link href="/register" className="btn btn-primary btn-sm">Register</Link>
             </>

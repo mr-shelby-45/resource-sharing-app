@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Section from '../Section'
 import EmptyState from '../EmptyState'
@@ -16,11 +15,9 @@ export default async function AvailableItemsSection({ userId }: { userId: number
       {items.length === 0
         ? <EmptyState message="No items available right now. Check back soon." />
         : (
-          <div className="card-grid">
+          <div className="tile-grid">
             {items.map(item => (
-              <ItemCard key={item.id} item={item} href={`/items/${item.id}`} badge={{ tone: 'available', label: 'Available' }}>
-                <Link href={`/items/${item.id}`} className="btn btn-accent btn-block">View and request</Link>
-              </ItemCard>
+              <ItemCard key={item.id} item={item} href={`/items/${item.id}`} badge={{ tone: 'available', label: 'Available' }} />
             ))}
           </div>
         )}

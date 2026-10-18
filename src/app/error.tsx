@@ -4,7 +4,7 @@
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <div className="page">
-      <div className="card empty">
+      <div className="empty">
         <h2>Something went wrong</h2>
         <p>The page could not load. Please try again.</p>
         <button className="btn btn-primary" onClick={reset}>Try again</button>

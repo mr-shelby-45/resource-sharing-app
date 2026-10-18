@@ -12,6 +12,14 @@ export default function ItemGallery({ urls, title }: { urls: string[]; title: st
       <div className="gallery-main">
         <Image src={urls[active]} alt={`${title}, photo ${active + 1} of ${urls.length}`}
           fill sizes="(max-width: 900px) 100vw, 720px" priority />
+        {urls.length > 1 && (
+          <>
+            <button type="button" className="gallery-arrow gallery-prev" aria-label="Previous photo"
+              onClick={() => setActive((active - 1 + urls.length) % urls.length)}>‹</button>
+            <button type="button" className="gallery-arrow gallery-next" aria-label="Next photo"
+              onClick={() => setActive((active + 1) % urls.length)}>›</button>
+          </>
+        )}
       </div>
       {urls.length > 1 && (
         <div className="gallery-thumbs">

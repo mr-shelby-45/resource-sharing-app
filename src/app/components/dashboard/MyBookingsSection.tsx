@@ -15,9 +15,9 @@ export default async function MyBookingsSection({ userId }: { userId: number }) 
   return (
     <Section title="My Bookings">
       {bookings.length === 0
-        ? <EmptyState message="No bookings yet. Request an item above." />
+        ? <EmptyState message="No bookings yet. Browse the community to find something to borrow." />
         : (
-          <div className="stack">
+          <div className="rows">
             {bookings.map(booking => <BookingRow key={booking.id} booking={booking} subtitle={booking.item.description} />)}
           </div>
         )}
