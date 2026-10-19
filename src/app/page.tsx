@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getCurrentUser } from '@/lib/currentUser'
 import PageHeader from './components/PageHeader'
 import MyItemsSection from './components/dashboard/MyItemsSection'
@@ -23,23 +22,13 @@ export default async function HomePage() {
 
   return (
     <div className="page">
-      <PageHeader
-        title={`Welcome back, ${user.name}`}
-        subtitle={user.canList ? 'Manage your items and booking requests' : 'Browse available items and track your bookings'}>
-        <Link href="/items" className="link-strong">Browse all community items →</Link>
-      </PageHeader>
-
-      {/* tasks on the left, things on the right; stacks on phones */}
-      <div className="home-layout">
-        <div>
-          {user.canList && <ActionNeededSection userId={user.id} />}
-          <MyBookingsSection userId={user.id} />
-        </div>
-        <div>
-          {user.canList && <MyItemsSection userId={user.id} />}
-          <AvailableItemsSection userId={user.id} />
-        </div>
+      {/* the lists sit side by side; the item grids below get the full width */}
+      <div className="home-top">
+        {user.canList && <ActionNeededSection userId={user.id} />}
+        <MyBookingsSection userId={user.id} />
       </div>
+      {user.canList && <MyItemsSection userId={user.id} />}
+      <AvailableItemsSection userId={user.id} />
     </div>
   )
 }

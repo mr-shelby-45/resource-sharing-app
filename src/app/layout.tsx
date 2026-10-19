@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Inter } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import FeedbackProvider from "./components/Feedback";
 
-const headingFont = Source_Serif_4({
+const headingFont = Fraunces({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700"],
 });
 
-const bodyFont = Inter({
+const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600"],

@@ -244,7 +244,7 @@ button:disabled {
 .stack-lg { display: flex; flex-direction: column; gap: var(--space-5); }
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .row-between { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
-.tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-5) var(--space-4); }
+.tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-5) var(--space-4); }
 .page-narrow { max-width: 640px; }
 
 .section { margin-bottom: var(--space-7); }
@@ -371,11 +371,9 @@ button:disabled {
 @media (min-width: 640px) { :root { --gutter: 24px; } }
 @media (min-width: 1024px) { :root { --gutter: 40px; } }
 
-/* ---------- home: tasks on the left, things on the right (one column on phones) ---------- */
-.home-layout { display: grid; gap: 0 var(--space-7); }
-@media (min-width: 1024px) {
-  .home-layout { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
-}
+/* ---------- home: two equal lists on top, full-width tile grids below ---------- */
+.home-top { display: grid; gap: 0 var(--space-7); grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); }
+.home-top > :only-child { max-width: 640px; }
 
 /* ---------- item page: photos left, details and booking form right ---------- */
 .item-layout { display: grid; gap: var(--space-5); }
