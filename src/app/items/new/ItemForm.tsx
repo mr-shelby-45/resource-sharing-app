@@ -92,7 +92,6 @@ export default function ItemForm({ action }: Props) {
     <div className="auth-wrap form-wrap">
       <div className="card form-card">
         <h1>List an Item</h1>
-        <p className="muted auth-intro">Share something with your community</p>
 
         <form action={formAction} className="form">
           <div className="field">

@@ -67,7 +67,7 @@ export default async function BookingsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Requests" subtitle="Items you have lent out and the requests you made" />
+      <PageHeader title="Requests" />
 
       {actionCount > 0 && (
         <p className="notice">

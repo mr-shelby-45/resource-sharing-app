@@ -15,7 +15,6 @@ export default function LoginForm({ action }: Props) {
     <div className="auth-wrap">
       <div className="card auth-card">
         <h1>Welcome back</h1>
-        <p className="muted auth-intro">Sign in to your Jirani account</p>
 
         <form action={formAction} className="form">
           <div className="field">

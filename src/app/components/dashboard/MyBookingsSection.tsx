@@ -13,7 +13,7 @@ export default async function MyBookingsSection({ userId }: { userId: number }) 
   })
 
   return (
-    <Section title="My Bookings">
+    <Section title="My bookings" narrow action={<Link href="/bookings" className="section-link-inline">All bookings and history</Link>}>
       {bookings.length === 0
         ? <EmptyState message="No bookings yet. Browse the community to find something to borrow." />
         : (
@@ -21,7 +21,6 @@ export default async function MyBookingsSection({ userId }: { userId: number }) 
             {bookings.map(booking => <BookingRow key={booking.id} booking={booking} subtitle={booking.item.description} />)}
           </div>
         )}
-      <p className="section-link"><Link href="/bookings">All bookings and history →</Link></p>
     </Section>
   )
 }

@@ -18,23 +18,23 @@ export default async function ActionNeededSection({ userId }: { userId: number }
   if (bookings.length === 0) return null
 
   return (
-    <Section title={`Needs your action (${bookings.length})`}>
+    <Section title="Needs your action" count={bookings.length} narrow>
       <div className="rows">
         {bookings.map(booking => {
           const overdue = isOverdue(booking)
+          const name = booking.borrower.name
           return (
-            <BookingRow key={booking.id} booking={booking}
-              subtitle={overdue
-                ? `Return overdue since ${formatDay(booking.endDate)}`
-                : `Requested by ${booking.borrower.name}`}
+            <BookingRow key={booking.id} booking={booking} hideStatus
+              subtitle={overdue ? `Return overdue since ${formatDay(booking.endDate)}` : `${name} asked to borrow this`}
+              subtitleTone={overdue ? 'danger' : undefined}
               details={
-                <p className="text-sm contact">
-                  <span className="strong">{booking.borrower.name}</span>{' · '}
+                <p className="text-sm muted contact">
+                  {overdue ? `${name} has it` : name}{' · '}
                   <a href={`mailto:${booking.borrower.email}`}>{booking.borrower.email}</a>{' · '}
                   <a href={`tel:${booking.borrower.phone}`}>{booking.borrower.phone}</a>
                 </p>
               }
-              actions={<BookingActions bookingId={booking.id} actions={overdue ? ['return'] : ['approve', 'reject']} />} />
+              aside={<BookingActions bookingId={booking.id} actions={overdue ? ['return'] : ['approve', 'reject']} />} />
           )
         })}
       </div>

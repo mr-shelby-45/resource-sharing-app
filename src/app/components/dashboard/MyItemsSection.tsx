@@ -29,8 +29,8 @@ export default async function MyItemsSection({ userId }: { userId: number }) {
   }
 
   return (
-    <Section title="Your Items"
-      action={<Link href="/items/new" className="btn btn-primary btn-sm">Add item</Link>}>
+    <Section title="Your items"
+      action={<Link href="/items/new" className="btn btn-outline">Add item</Link>}>
       {items.length === 0
         ? (
           <EmptyState message="No items listed yet">
@@ -38,7 +38,7 @@ export default async function MyItemsSection({ userId }: { userId: number }) {
           </EmptyState>
         )
         : (
-          <div className="tile-grid">
+          <div className="tile-grid tile-grid-3">
             {items.map(item => (
               <ItemCard key={item.id} item={item} href={`/items/${item.id}`} badge={flag(item)}>
                 <DeleteButtonClient itemId={item.id} title={item.title} />

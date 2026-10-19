@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { todayInNairobi } from '@/lib/dates'
@@ -22,7 +23,7 @@ export default async function ItemsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Browse Items" subtitle="Items available for borrowing in your community" />
+      <PageHeader title="Browse Items" />
       {items.length === 0
         ? <EmptyState message="No items available right now. Check back soon." />
         : (
@@ -32,7 +33,9 @@ export default async function ItemsPage() {
               return (
                 <ItemCard key={item.id} item={item} href={`/items/${item.id}`}
                   badge={{ tone: hasBookings ? 'pending' : 'available', label: hasBookings ? 'Taken on some dates' : 'Available' }}>
-                  {item.ownerId === user.id && <p className="muted text-sm">Your item</p>}
+                  {item.ownerId === user.id
+                    ? <p className="muted text-sm">Your item</p>
+                    : <Link href={`/items/${item.id}`} className="btn btn-outline btn-sm btn-block">View and request</Link>}
                 </ItemCard>
               )
             })}
