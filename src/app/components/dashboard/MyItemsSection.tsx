@@ -38,7 +38,7 @@ export default async function MyItemsSection({ userId }: { userId: number }) {
           </EmptyState>
         )
         : (
-          <div className="tile-grid tile-grid-3">
+          <div className="tile-grid">
             {items.map(item => (
               <ItemCard key={item.id} item={item} href={`/items/${item.id}`} badge={flag(item)}>
                 <DeleteButtonClient itemId={item.id} title={item.title} />
