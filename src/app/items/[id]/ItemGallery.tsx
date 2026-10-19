@@ -8,20 +8,25 @@ export default function ItemGallery({ urls, title }: { urls: string[]; title: st
   if (urls.length === 0) return null
 
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '4 / 3', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface-2)' }}>
+    <div>
+      <div className="gallery-main">
         <Image src={urls[active]} alt={`${title}, photo ${active + 1} of ${urls.length}`}
-          fill sizes="(max-width: 640px) 100vw, 600px" style={{ objectFit: 'cover' }} priority />
+          fill sizes="(max-width: 900px) 100vw, 720px" priority />
+        {urls.length > 1 && (
+          <>
+            <button type="button" className="gallery-arrow gallery-prev" aria-label="Previous photo"
+              onClick={() => setActive((active - 1 + urls.length) % urls.length)}>‹</button>
+            <button type="button" className="gallery-arrow gallery-next" aria-label="Next photo"
+              onClick={() => setActive((active + 1) % urls.length)}>›</button>
+          </>
+        )}
       </div>
       {urls.length > 1 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '8px' }}>
+        <div className="gallery-thumbs">
           {urls.map((url, i) => (
             <button key={url} type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`}
-              style={{
-                position: 'relative', aspectRatio: '1', padding: 0, overflow: 'hidden', borderRadius: '8px',
-                border: i === active ? '2px solid var(--primary)' : '2px solid transparent',
-              }}>
-              <Image src={url} alt="" fill sizes="150px" style={{ objectFit: 'cover' }} />
+              aria-pressed={i === active} className={`gallery-thumb${i === active ? ' active' : ''}`}>
+              <Image src={url} alt="" fill sizes="150px" />
             </button>
           ))}
         </div>

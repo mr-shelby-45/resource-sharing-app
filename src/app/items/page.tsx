@@ -23,19 +23,19 @@ export default async function ItemsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Browse Items" subtitle="Items available for borrowing in your community" />
+      <PageHeader title="Browse Items" />
       {items.length === 0
         ? <EmptyState message="No items available right now. Check back soon." />
         : (
-          <div className="card-grid">
+          <div className="tile-grid">
             {items.map(item => {
               const hasBookings = item.bookings.length > 0
               return (
-                <ItemCard key={item.id} item={item} href={item.ownerId === user.id ? undefined : `/items/${item.id}`}
-                  badge={{ tone: hasBookings ? 'booked' : 'available', label: hasBookings ? 'Booked on some dates' : 'Available' }}>
+                <ItemCard key={item.id} item={item} href={`/items/${item.id}`}
+                  badge={{ tone: hasBookings ? 'pending' : 'available', label: hasBookings ? 'Taken on some dates' : 'Available' }}>
                   {item.ownerId === user.id
                     ? <p className="muted text-sm">Your item</p>
-                    : <Link href={`/items/${item.id}`} className="btn btn-accent btn-block">View and request</Link>}
+                    : <Link href={`/items/${item.id}`} className="btn btn-outline btn-sm btn-block">View and request</Link>}
                 </ItemCard>
               )
             })}

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getCurrentUser } from '@/lib/currentUser'
 import PageHeader from './components/PageHeader'
+import HomeFinder from './components/HomeFinder'
 import MyItemsSection from './components/dashboard/MyItemsSection'
 import ActionNeededSection from './components/dashboard/ActionNeededSection'
 import MyBookingsSection from './components/dashboard/MyBookingsSection'
@@ -22,28 +22,12 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="page">
-      <PageHeader
-        title={`Welcome back, ${user.name}`}
-        subtitle={user.canList ? 'Manage your items and booking requests' : 'Browse available items and track your bookings'}>
-        <Link href="/items" className="link-strong">Browse all community items →</Link>
-      </PageHeader>
-
-      {user.canList
-        ? (
-          <>
-            <ActionNeededSection userId={user.id} />
-            <MyItemsSection userId={user.id} />
-            <MyBookingsSection userId={user.id} />
-            <AvailableItemsSection userId={user.id} />
-          </>
-        )
-        : (
-          <>
-            <AvailableItemsSection userId={user.id} />
-            <MyBookingsSection userId={user.id} />
-          </>
-        )}
+    <div className="page home-page">
+      <HomeFinder name={user.name} />
+      {user.canList && <ActionNeededSection userId={user.id} />}
+      {user.canList && <MyItemsSection userId={user.id} />}
+      <MyBookingsSection user={user} />
+      <AvailableItemsSection userId={user.id} />
     </div>
   )
 }

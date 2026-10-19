@@ -51,13 +51,13 @@ export default function BookingForm({ itemId, dailyRate, minDate, bookedRanges }
   }
 
   if (done) {
-    return <p style={{ color: 'var(--primary)', fontWeight: 500 }}>
+    return <p className="notice-success" role="status">
       Request sent. The owner will review it.
     </p>
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px' }}>
+    <form onSubmit={handleSubmit} className="form">
       <label>
         From
         <input type="date" required min={minDate} value={startDate}
@@ -73,19 +73,19 @@ export default function BookingForm({ itemId, dailyRate, minDate, bookedRanges }
       </label>
 
       {ready && (
-        <p style={{ color: 'var(--text-muted)' }}>
+        <p className="muted">
           {days} {days === 1 ? 'day' : 'days'} × {dailyRate === 0 ? 'Free' : `KES ${dailyRate.toLocaleString('en-KE')}`}
           {dailyRate > 0 && <strong> = KES {(days * dailyRate).toLocaleString('en-KE')}</strong>}
         </p>
       )}
       {clash && (
-        <p style={{ color: 'var(--danger, #b00020)' }}>
+        <p className="form-error" role="alert">
           These dates overlap an approved booking. Pick different dates.
         </p>
       )}
-      {error && <p style={{ color: 'var(--danger, #b00020)' }}>{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
 
-      <button type="submit" className="btn-primary" disabled={!ready || clash || loading}>
+      <button type="submit" className="btn btn-primary btn-block" disabled={!ready || clash || loading}>
         {loading ? 'Sending…' : 'Request to borrow'}
       </button>
     </form>

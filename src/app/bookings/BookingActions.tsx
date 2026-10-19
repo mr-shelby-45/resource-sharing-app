@@ -6,6 +6,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useFeedback } from '@/app/components/Feedback'
 
 type Action = 'approve' | 'reject' | 'return' | 'cancel'
 
@@ -16,14 +17,21 @@ type Props = {
 
 const LABELS: Record<Action, string> = {
   approve: 'Approve',
-  reject: 'Reject',
+  reject: 'Decline',
   return: 'Mark returned',
   cancel: 'Cancel',
 }
 
+const SUCCESS: Record<Action, string> = {
+  approve: 'Request approved',
+  reject: 'Request declined',
+  return: 'Marked as returned',
+  cancel: 'Booking cancelled',
+}
+
 const STYLES: Record<Action, string> = {
   approve: 'btn-primary',
-  reject: 'btn-danger',
+  reject: 'btn-outline',
   return: 'btn-primary',
   cancel: 'btn-outline',
 }
@@ -32,9 +40,13 @@ export default function BookingActions({ bookingId, actions }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState<Action | null>(null)
   const [error, setError] = useState('')
+  const { confirm, toast } = useFeedback()
 
   async function handleAction(action: Action) {
-    if(action === 'cancel' && !window.confirm('cancel this booking?')) return
+    if (action === 'cancel' && !(await confirm({
+      title: 'Cancel this booking?', body: 'The dates will become free for other people.',
+      confirmLabel: 'Cancel booking', danger: true,
+    }))) return
     setError('')
     setBusy(action)
     try {
@@ -44,6 +56,7 @@ export default function BookingActions({ bookingId, actions }: Props) {
         body: JSON.stringify({ action }),
       })
       if (res.ok) {
+        toast(SUCCESS[action])
         router.refresh()   // re-runs the server page, no full reload
       } else {
         const data = await res.json().catch(() => ({}))
@@ -58,15 +71,15 @@ export default function BookingActions({ bookingId, actions }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div className="cluster">
         {actions.map(action => (
           <button key={action} onClick={() => handleAction(action)} disabled={busy !== null}
-            className={STYLES[action]} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+            className={`btn ${STYLES[action]}`}>
             {busy === action ? 'Working…' : LABELS[action]}
           </button>
         ))}
       </div>
-      {error && <p style={{ color: 'var(--danger, #b00020)', marginTop: '8px', fontSize: '0.85rem' }}>{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
     </div>
   )
 }

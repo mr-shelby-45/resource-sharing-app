@@ -27,7 +27,6 @@ export default function RegistrationForm({ action }: Props) {
     <div className="auth-wrap">
       <div className="card auth-card">
         <h1>Welcome to Jirani</h1>
-        <p className="muted auth-intro">Register your Jirani account</p>
 
         <form action={formAction} onInput={checkMatch} className="form">
           <div className="field">

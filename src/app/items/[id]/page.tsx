@@ -48,28 +48,31 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   const bookedRanges = item.bookings.map(b => ({ start: iso(b.startDate), end: iso(b.endDate) }))
 
   return (
-    <div className="page page-narrow">
+    <div className="page">
       <Link href="/" className="back-link">← Back</Link>
-      <div className="card stack">
+      <div className="item-layout">
         <ItemGallery urls={item.images.map(i => i.url)} title={item.title} />
-        <h1>{item.title}</h1>
-        <p className="muted">{item.description}</p>
-        <p className="price">{formatRate(item.dailyRate)}</p>
 
-        {item.bookings.length > 0 && (
-          <div>
-            <p className="strong">Already booked</p>
-            <ul className="muted booked-list">
-              {item.bookings.map(b => <li key={b.id}>{formatDateRange(b.startDate, b.endDate)}</li>)}
-            </ul>
-          </div>
-        )}
+        <div className="card stack item-info">
+          <h1>{item.title}</h1>
+          <p className="muted">{item.description}</p>
+          <p className="price">{formatRate(item.dailyRate)}</p>
 
-        {isOwner
-          ? <p className="muted">This is your item.</p>
-          : !canRequest
-            ? <p className="muted">Your account is not allowed to borrow.</p>
-            : <BookingForm itemId={item.id} dailyRate={item.dailyRate} minDate={iso(today)} bookedRanges={bookedRanges} />}
+          {item.bookings.length > 0 && (
+            <div>
+              <p className="strong">Already booked</p>
+              <ul className="muted booked-list">
+                {item.bookings.map(b => <li key={b.id}>{formatDateRange(b.startDate, b.endDate)}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {isOwner
+            ? <p className="muted">This is your item.</p>
+            : !canRequest
+              ? <p className="muted">Your account is not allowed to borrow.</p>
+              : <BookingForm itemId={item.id} dailyRate={item.dailyRate} minDate={iso(today)} bookedRanges={bookedRanges} />}
+        </div>
       </div>
     </div>
   )
