@@ -26,7 +26,7 @@ export default async function HomePage() {
       <HomeFinder name={user.name} />
       {user.canList && <ActionNeededSection userId={user.id} />}
       {user.canList && <MyItemsSection userId={user.id} />}
-      <MyBookingsSection userId={user.id} />
+      <MyBookingsSection user={user} />
       <AvailableItemsSection userId={user.id} />
     </div>
   )

@@ -15,6 +15,7 @@
   --border: #dde3e3;
   --text-muted: #4f5c5b;
   --radius: 10px;
+  --radius-btn: 6px;
   --content-width: 1280px;
   --gutter: 16px;
   --space-1: 4px;
@@ -101,7 +102,7 @@ button {
   font-family: var(--font-body), system-ui, sans-serif;
   font-weight: 500;
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius-btn);
   padding: 10px 20px;
   min-height: 44px;
   transition: background 0.15s ease, color 0.15s ease;
@@ -125,7 +126,7 @@ button {
 .btn-outline {
   background: transparent;
   color: var(--primary);
-  border: 1.5px solid var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .btn-outline:hover {
@@ -136,7 +137,7 @@ button {
 .btn-danger {
   background: transparent;
   color: var(--danger);
-  border: 1.5px solid var(--danger);
+  border: 1px solid var(--danger);
 }
 
 .btn-danger:hover {
@@ -156,7 +157,7 @@ button {
 input, select, textarea {
   width: 100%;
   padding: 10px 12px; min-height: 44px;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 0.95rem;
@@ -273,7 +274,7 @@ button:disabled {
 .history-list { margin-top: var(--space-3); }
 
 /* links styled as buttons need the same box as <button> */
-.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border-radius: var(--radius); font-weight: 500; text-align: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border-radius: var(--radius-btn); font-weight: 500; text-align: center; }
 .btn-block { display: block; width: 100%; }
 
 @media (max-width: 600px) {
@@ -381,13 +382,13 @@ button:disabled {
 .finder-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); }
 .finder-search input { padding-left: 40px; background: var(--surface-2); }
 .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
-.chip { padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--foreground); font-size: var(--text-sm); }
+.chip { padding: 8px 18px; border-radius: var(--radius-btn); border: 1px solid var(--border); background: transparent; color: var(--foreground); font-size: var(--text-sm); }
 .chip-active { border-color: var(--primary); background: var(--success-bg); color: var(--primary); }
 .chip:disabled { opacity: 1; cursor: default; }
 .section-count { margin-left: var(--space-2); font-family: var(--font-body), system-ui, sans-serif; font-size: var(--text-base); font-weight: 400; color: var(--text-muted); }
 .section-link-inline { font-size: var(--text-sm); font-weight: 500; text-decoration: underline; }
-.tile-grid-3 { grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 900px) { .tile-grid-3 { grid-template-columns: repeat(3, 1fr); } }
+.tile-grid-3 { grid-template-columns: repeat(auto-fill, minmax(180px, 260px)); }
+@media (max-width: 480px) { .tile-grid-3 { grid-template-columns: repeat(2, 1fr); } }
 .row-main { flex: 1; min-width: 0; }
 .row-aside { flex-shrink: 0; }
 .overdue-line { color: var(--danger); font-weight: 500; }
@@ -440,7 +441,7 @@ button:disabled {
 .toast-error { background: var(--danger); color: var(--background); }
 
 /* ---------- skip link, loading, gallery arrows ---------- */
-.skip-link { position: absolute; left: var(--space-2); top: -60px; z-index: 400; padding: var(--space-2) var(--space-4); background: var(--primary); color: var(--on-primary); border-radius: var(--radius); }
+.skip-link { position: absolute; left: var(--space-2); top: -60px; z-index: 400; padding: var(--space-2) var(--space-4); background: var(--primary); color: var(--on-primary); border-radius: var(--radius-btn); }
 .skip-link:focus { top: var(--space-2); color: var(--on-primary); }
 .skeleton { background: var(--surface-2); border-radius: var(--radius); animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: 0.5; } }
@@ -457,3 +458,15 @@ button:disabled {
   .navbar .btn-sm { padding: 6px 10px; white-space: nowrap; }
   .navbar .theme-toggle { padding: 0 4px; }
 }
+
+/* ---------- breathing room ---------- */
+.tile-title { margin-top: var(--space-3); }
+.tile-badge { margin-top: var(--space-3); }
+.tile-footer { margin-top: var(--space-4); }
+.tile .price { margin-top: var(--space-1); }
+.row-item { padding: var(--space-5) 0; }
+.row-item.stack { gap: var(--space-4); }
+.row-main { display: flex; flex-direction: column; gap: var(--space-2); }
+.booking-details { gap: var(--space-2); }
+.row-item .contact { margin-top: var(--space-1); }
+.row-title { margin-bottom: 2px; }
