@@ -22,9 +22,12 @@ const aj = arcjet({
   ],
 });
 //define a url path that require a valid user login(JWT)
-const protectedRoutes = [ "/api/items", "/api/bookings", "/items", "/bookings", "/api/upload"];
+const protectedRoutes = [ "/api/items", "/api/bookings", "/items", "/bookings", "/api/upload", "/payments"];
 
 export async function proxy(request: NextRequest) {
+  // Paystack's servers call this route, so the bot and rate rules would block them.
+  // The route proves the caller with the x-paystack-signature check instead.
+  if (request.nextUrl.pathname === "/api/paystack/webhook") return NextResponse.next()
   //arcjet runs the rules defined above
   const decision = await aj.protect(request)
   //if arcjet blocks the request, check the reason for the block and display a message
@@ -73,5 +76,5 @@ export async function proxy(request: NextRequest) {
 }
 //tells nextconfig to only run on these specific URL patterns
 export const config = {
-  matcher: ["/api/:path*", "/items/:path*", "/bookings/:path*"],
+  matcher: ["/api/:path*", "/items/:path*", "/bookings/:path*", "/payments/:path*"],
 }

@@ -24,6 +24,7 @@ export default async function NavBar() {
             </NavLink>
             <NavLink href="/items">Browse</NavLink>
             <NavLink href="/bookings">Requests</NavLink>
+            <NavLink href="/payments">Payments</NavLink>
           </>
         )}
       </div>

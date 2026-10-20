@@ -13,12 +13,17 @@ import Link from 'next/link'
 import { canCancelBooking } from '@/lib/permissions'
 import { isOverdue } from '@/lib/bookingTasks'
 import { countOwnerActions } from '@/lib/ownerActions'
+import { amountDue, payState } from '@/lib/payments'
+import { paymentNote } from '@/lib/paymentLabels'
+import { expireUnpaidBookings } from '@/services/paymentServices'
 
-type Action = 'approve' | 'reject' | 'return' | 'cancel'
+type Action = 'approve' | 'reject' | 'return' | 'cancel' | 'pay' | 'retry_payout'
 
 export default async function BookingsPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login')
+
+  await expireUnpaidBookings()
 
   const bookings = await prisma.booking.findMany({
     // admins see everything; everyone else sees bookings they made or bookings on their items
@@ -26,7 +31,7 @@ export default async function BookingsPage() {
       ? {}
       : { OR: [{ borrowerId: user.id }, { item: { ownerId: user.id } }] },
     // contact details are only rendered for the owner's decision cards
-    include: { item: true, borrower: { select: { name: true, email: true, phone: true } } },
+    include: { item: true, payment: true, borrower: { select: { name: true, email: true, phone: true } } },
     orderBy: { startDate: 'asc' },   // soonest first
   })
 
@@ -49,9 +54,13 @@ export default async function BookingsPage() {
   const history = bookings.filter(isFinished).reverse()   // newest first
 
   const cancelAction = (b: B): Action[] => (canCancelBooking(user, b, b.item).allowed ? ['cancel'] : [])
+  // the owner can only mark it returned once the borrower has paid (or it is free)
+  const returnAction = (b: B): Action[] => (payState(b, b.payment) === 'AWAITING' ? [] : ['return'])
+  const payAction = (b: B): Action[] => (b.status === 'APPROVED' && payState(b, b.payment) === 'AWAITING' ? ['pay'] : [])
 
   const row = (b: B, actions: Action[], opts?: { contact?: boolean }) => (
     <BookingRow key={b.id} booking={b}
+      payment={paymentNote(isMine(b) ? 'borrower' : 'owner', b, b.payment)}
       subtitle={isMine(b)
         ? b.item.description
         : isOverdue(b) ? `Requested by ${b.borrower.name} · Return overdue` : `Requested by ${b.borrower.name}`}
@@ -62,7 +71,7 @@ export default async function BookingsPage() {
           <p className="muted text-sm">{b.borrower.phone}</p>
         </div>
       )}
-      actions={actions.length > 0 ? <BookingActions bookingId={b.id} actions={actions} /> : undefined} />
+      actions={actions.length > 0 ? <BookingActions bookingId={b.id} actions={actions} payLabel={`Pay KES ${amountDue(b).toLocaleString('en-KE')}`} /> : undefined} />
   )
 
   return (
@@ -83,20 +92,20 @@ export default async function BookingsPage() {
 
       {lentOut.length > 0 && (
         <Section title="Lent out">
-          <div className="stack">{lentOut.map(b => row(b, ['return', ...cancelAction(b)]))}</div>
+          <div className="stack">{lentOut.map(b => row(b, [...returnAction(b), ...cancelAction(b)]))}</div>
         </Section>
       )}
 
       <Section title="Your requests">
         {myRequests.length === 0
           ? <EmptyState message="You have not requested anything yet. Browse the community to find an item." />
-          : <div className="stack">{myRequests.map(b => row(b, cancelAction(b)))}</div>}
+          : <div className="stack">{myRequests.map(b => row(b, [...payAction(b), ...cancelAction(b)]))}</div>}
       </Section>
 
       {history.length > 0 && (
         <details className="history">
           <summary className="muted">History ({history.length})</summary>
-          <div className="stack history-list">{history.map(b => row(b, []))}</div>
+          <div className="stack history-list">{history.map(b => row(b, isOnMyItem(b) && b.payment?.payoutStatus === 'FAILED' ? ['retry_payout'] : []))}</div>
         </details>
       )}
     </div>

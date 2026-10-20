@@ -86,6 +86,21 @@ Start the development server:
 
     npm run dev
 
+### Payments (Paystack, test mode)
+
+Add these to `.env`:
+
+    PAYSTACK_SECRET_KEY=sk_test_xxx
+
+Then, in the Paystack dashboard (test mode):
+
+- Settings > API Keys & Webhooks: set the webhook URL to `https://<your-public-url>/api/paystack/webhook`
+  (use a tunnel such as ngrok locally). Without it, payments are still confirmed when the borrower returns to `/payments/callback`, but payout and refund results need the webhook.
+- Settings > Preferences: turn off transfer OTP, otherwise owner payouts stop at "needs OTP".
+- Fund the test balance so transfers can succeed.
+
+Flow: owner approves, borrower pays within 24 hours (else the booking is cancelled), the owner is paid to their registered phone number when they mark the item returned, and a cancel before the start date refunds the borrower in full.
+
 ## API Reference
 
 | Method | Endpoint | Description | Auth |
@@ -99,4 +114,6 @@ Start the development server:
 | DELETE | /api/items/:id | Delete an item | Owner |
 | GET | /api/bookings | Get all bookings | Yes |
 | POST | /api/bookings | Create a booking | Borrower |
-| PATCH | /api/bookings/:id | Approve or reject booking | Owner |
+| PATCH | /api/bookings/:id | Approve, reject, return, cancel, retry_payout | Owner / Borrower |
+| POST | /api/bookings/:id/pay | Start Paystack checkout for an approved booking | Borrower |
+| POST | /api/paystack/webhook | Paystack events (signed) | Signature |

@@ -8,11 +8,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useFeedback } from '@/app/components/Feedback'
 
-type Action = 'approve' | 'reject' | 'return' | 'cancel'
+type Action = 'approve' | 'reject' | 'return' | 'cancel' | 'pay' | 'retry_payout'
 
 type Props = {
   bookingId: number
   actions: Action[]   // which buttons to show; the server page decides this
+  payLabel?: string   // text of the pay button, e.g. "Pay KES 600"
 }
 
 const LABELS: Record<Action, string> = {
@@ -20,6 +21,8 @@ const LABELS: Record<Action, string> = {
   reject: 'Decline',
   return: 'Mark returned',
   cancel: 'Cancel',
+  pay: 'Pay now',
+  retry_payout: 'Retry payout',
 }
 
 const SUCCESS: Record<Action, string> = {
@@ -27,6 +30,8 @@ const SUCCESS: Record<Action, string> = {
   reject: 'Request declined',
   return: 'Marked as returned',
   cancel: 'Booking cancelled',
+  pay: '',
+  retry_payout: 'Payout started again',
 }
 
 const STYLES: Record<Action, string> = {
@@ -34,9 +39,11 @@ const STYLES: Record<Action, string> = {
   reject: 'btn-outline',
   return: 'btn-primary',
   cancel: 'btn-outline',
+  pay: 'btn-primary',
+  retry_payout: 'btn-primary',
 }
 
-export default function BookingActions({ bookingId, actions }: Props) {
+export default function BookingActions({ bookingId, actions, payLabel }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState<Action | null>(null)
   const [error, setError] = useState('')
@@ -50,13 +57,21 @@ export default function BookingActions({ bookingId, actions }: Props) {
     setError('')
     setBusy(action)
     try {
+      if (action === 'pay') {
+        // Paystack's hosted checkout takes over from here and sends the borrower back to /payments/callback
+        const res = await fetch(`/api/bookings/${bookingId}/pay`, { method: 'POST' })
+        const data = await res.json().catch(() => ({}))
+        if (res.ok && data.url) { window.location.href = data.url; return }
+        setError(data.message ?? 'Could not start the payment')
+        return
+      }
       const res = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       })
       if (res.ok) {
-        toast(SUCCESS[action])
+        if (SUCCESS[action]) toast(SUCCESS[action])
         router.refresh()   // re-runs the server page, no full reload
       } else {
         const data = await res.json().catch(() => ({}))
@@ -75,7 +90,7 @@ export default function BookingActions({ bookingId, actions }: Props) {
         {actions.map(action => (
           <button key={action} onClick={() => handleAction(action)} disabled={busy !== null}
             className={`btn ${STYLES[action]}`}>
-            {busy === action ? 'Working…' : LABELS[action]}
+            {busy === action ? 'Working…' : action === 'pay' && payLabel ? payLabel : LABELS[action]}
           </button>
         ))}
       </div>

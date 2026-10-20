@@ -6,6 +6,8 @@ import { todayInNairobi } from "@/lib/dates";
 import { Item, User } from "@/generated/prisma/client";
 import { AppError, isOverlapViolation, assertAllowed } from "@/lib/errors"
 import { BookingStatus } from "@/generated/prisma/client"
+import { payState } from "@/lib/payments"
+import { payOwner, refundPayment } from "@/services/paymentServices"
 
 export const OVERLAP_REJECTION_NOTE = "The item was booked by someone else for these dates."
 
@@ -98,7 +100,7 @@ export async function approveBooking(user: User, bookingId: number, action: stri
         // 1. approve, but only if it is still PENDING (guards against double-click / cancel race)
         const approved = await tx.booking.updateMany({
           where: { id: bookingId, status: "PENDING" },
-          data: { status: "APPROVED" },
+          data: { status: "APPROVED", approvedAt: new Date() },
         })
         if (approved.count !== 1) {
           throw new AppError(409, "This booking has already been processed")
@@ -146,8 +148,17 @@ export async function returnItem(user: User, bookingId: number) {
   
   const permission = canReturnItem(user, booking, item)
   assertAllowed(permission)
-  
-  return moveStatus(bookingId, "APPROVED", "RETURNED", { returnedAt: new Date() })
+
+  // a paid item is the only kind that gets lent out: the owner is paid when it comes back
+  const payment = await prisma.payment.findUnique({ where: { bookingId } })
+  if (payState(booking, payment) !== "FREE" && payment?.status !== "PAID") {
+    throw new AppError(409, "The borrower has not paid for this booking yet")
+  }
+
+  const returned = await moveStatus(bookingId, "APPROVED", "RETURNED", { returnedAt: new Date() })
+  // paying the owner must never undo the return; a failed payout is shown on the booking and can be retried
+  await payOwner(bookingId).catch(error => console.error("Payout failed", bookingId, error))
+  return returned
 }
 
 export async function cancelBooking(user: User, bookingId: number) {
@@ -175,5 +186,8 @@ export async function cancelBooking(user: User, bookingId: number) {
 
   //the booking must still be in the status we just checked, otherwise someone changed it first
   //the dates open up again by themselves: only APPROVED bookings block dates
-  return moveStatus(bookingId, booking.status, "CANCELLED", { decisionNote })
+  const cancelled = await moveStatus(bookingId, booking.status, "CANCELLED", { decisionNote })
+  // cancelling before the start date gives the borrower the full amount back
+  await refundPayment(bookingId).catch(error => console.error("Refund failed", bookingId, error))
+  return cancelled
 }

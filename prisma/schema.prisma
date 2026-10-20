@@ -22,10 +22,27 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+// money moving out of Jirani: the owner payout and the borrower refund
+enum TransferStatus {
+  NONE
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model User {
   id            Int    @id @default(autoincrement())
   name          String
   phone         String
+  // Paystack transfer recipient for the number the owner registered with
+  recipientCode  String?
+  recipientPhone String?
   email         String  @unique
   password      String 
   isAdmin       Boolean @default(false)
@@ -71,17 +88,32 @@ model Booking {
   dailyRate       Int                      
   returnedAt      DateTime?  
   decisionNote    String?          
+  // when the owner approved; an unpaid booking expires a set time after this
+  approvedAt      DateTime?
+  payment         Payment?
 
 }
 
+// One payment per booking. Collection, owner payout and refund are tracked on the same row.
+model Payment {
+  id             Int            @id @default(autoincrement())
+  bookingId      Int            @unique
+  booking        Booking        @relation(fields: [bookingId], references: [id])
+  amount         Int            // KES, whole shillings
+  reference      String         @unique   // sent to Paystack, changes on every new attempt
+  status         PaymentStatus  @default(PENDING)
+  paidAt         DateTime?
+  channel        String?
 
+  payoutStatus    TransferStatus @default(NONE)
+  payoutReference String?        @unique
+  payoutNote      String?
+  paidOutAt       DateTime?
 
+  refundStatus   TransferStatus @default(NONE)
+  refundNote     String?
+  refundedAt     DateTime?
 
-
-
-
-
-
-
-
-
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
