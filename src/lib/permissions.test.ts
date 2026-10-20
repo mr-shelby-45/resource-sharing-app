@@ -16,7 +16,9 @@ describe("canCreateBooking", () => {
       password: "pass4",
       isAdmin: true,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -42,7 +44,9 @@ describe("canCreateBooking", () => {
       password: "pass4",
       isAdmin: false,
       canList: false,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -68,7 +72,9 @@ describe("canCreateBooking", () => {
       password: "pass4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -93,7 +99,9 @@ describe("canCreateBooking", () => {
       password: "pass4",
       isAdmin: false,
       canList: false,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -119,7 +127,9 @@ describe("canCreateBooking", () => {
       password: "pass4",
       isAdmin: false,
       canList: false,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -146,7 +156,9 @@ describe("canAddItem", () => {
       password: "password4",
       isAdmin: true,
       canList: false,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const results = canAddItem(adminUser)
     expect(results).toEqual({ allowed: true })
@@ -160,7 +172,9 @@ describe("canAddItem", () => {
       password: "password4",
       isAdmin: false,
       canList: false,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const results = canAddItem(user)
     expect(results).toEqual({ allowed: false, message: "Only Owners can add new items" })
@@ -174,7 +188,9 @@ describe("canAddItem", () => {
     password: "password4",
     isAdmin: false,
     canList: false,
-    canBorrow: true
+    canBorrow: true,
+    recipientCode: null,
+    recipientPhone: null
   }
   const results = canAddItem(user)
   expect(results).toEqual({ allowed: false, message: "Only Owners can add new items" })
@@ -188,7 +204,9 @@ describe("canAddItem", () => {
       password: "password4",
       isAdmin: false,
       canList: true,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const results = canAddItem(user)
     expect(results).toEqual({ allowed: true })
@@ -205,7 +223,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: true,
       canList: true,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -224,7 +244,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),
       dailyRate: 100,
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -238,7 +259,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: true,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -257,7 +280,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -271,7 +295,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: false,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -290,7 +316,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false, message: 'Only owners can approve this booking'})
@@ -304,7 +331,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -323,7 +352,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false, message: "one can only approve the items that they own" })
@@ -337,7 +367,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -356,7 +388,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false,  message:'This booking has already been processed!'})
@@ -370,7 +403,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -389,7 +424,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: false,  message:'This booking has already been processed!'})
@@ -403,7 +439,9 @@ describe("bookingapproval", () => {
       password: "pss4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 11,
@@ -422,7 +460,8 @@ describe("bookingapproval", () => {
       endDate: new Date("2026-10-13"),  
       dailyRate: 100,                   
       returnedAt: new Date("2026-10-14"),
-      decisionNote: null
+      decisionNote: null,
+      approvedAt: null
     }
     const reslts = canApproveBooking(user, item, booking)
     expect(reslts).toEqual({ allowed: true })
@@ -439,7 +478,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: true,
       canList: false,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -462,7 +503,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: false,
       canList: true,
-      canBorrow: false
+      canBorrow: false,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -485,7 +528,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: false,
       canList: false,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -508,7 +553,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -531,7 +578,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -554,7 +603,9 @@ describe("allow deletion of an item from listing:", () => {
       password: "pass4",
       isAdmin: false,
       canList: true,
-      canBorrow: true
+      canBorrow: true,
+      recipientCode: null,
+      recipientPhone: null
     }
     const item = {
       id: 10,
@@ -571,7 +622,7 @@ describe("allow deletion of an item from listing:", () => {
 })
 
 describe("canCreateBooking availability", () => {
-  const admin = { id: 1, name: "alice", phone: "797812893", email: "alice@gmail.com", password: "pass4", isAdmin: true, canList: true, canBorrow: true }
+  const admin = { id: 1, name: "alice", phone: "797812893", email: "alice@gmail.com", password: "pass4", isAdmin: true, canList: true, canBorrow: true, recipientCode: null, recipientPhone: null }
   const item = { id: 1, ownerId: 2, title: "drill", description: "light use", dailyRate: 150, deletedAt: null }
 
   it("admin cannot book dates that are taken", () => {
@@ -596,7 +647,7 @@ describe("canCancelBooking", () => {
   const booking = (o: Record<string, unknown> = {}) => ({
     id: 9, itemId: 5, borrowerId: 3, status: "PENDING",
     startDate: day("2026-11-12"), endDate: day("2026-11-14"),
-    dailyRate: 100, returnedAt: null, decisionNote: null, ...o
+    dailyRate: 100, returnedAt: null, decisionNote: null, approvedAt: null, ...o
   }) as never
 
   it("lets the borrower withdraw a pending request", () => {

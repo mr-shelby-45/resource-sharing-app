@@ -479,3 +479,9 @@ button:disabled {
 ::placeholder { color: #5f6c6b; opacity: 1; }
 :root[data-theme="dark"] ::placeholder { color: #9aa9a8; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) ::placeholder { color: #9aa9a8; } }
+
+/* ---------- payment status line ---------- */
+.pay-note { font-weight: 500; }
+.pay-ok { color: var(--primary); }
+.pay-wait { color: var(--warning-text); }
+.pay-bad { color: var(--danger); }

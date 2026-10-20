@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/currentUser'
 import PageHeader from './components/PageHeader'
 import HomeFinder from './components/HomeFinder'
+import { expireUnpaidBookings } from '@/services/paymentServices'
 import MyItemsSection from './components/dashboard/MyItemsSection'
 import ActionNeededSection from './components/dashboard/ActionNeededSection'
 import MyBookingsSection from './components/dashboard/MyBookingsSection'
@@ -20,6 +21,9 @@ export default async function HomePage() {
       </div>
     )
   }
+
+  // unpaid approvals older than the payment window are cancelled before we show anything
+  await expireUnpaidBookings()
 
   return (
     <div className="page home-page">

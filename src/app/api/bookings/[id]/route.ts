@@ -1,5 +1,6 @@
 //one endpoint, four actions on a booking: approve, reject (owner), return (owner), cancel (borrower)
 import { approveBooking, returnItem, cancelBooking } from '@/services/bookingServices'
+import { retryPayout } from '@/services/paymentServices'
 import { withAuth } from '@/lib/apiHandler'
 import { readJson } from '@/lib/apiHandler'
 
@@ -23,6 +24,8 @@ export async function PATCH(
         return Response.json(await returnItem(currentUser, bookingId), { status: 200 })
       case "cancel":
         return Response.json(await cancelBooking(currentUser, bookingId), { status: 200 })
+      case "retry_payout":
+        return Response.json(await retryPayout(currentUser, bookingId), { status: 200 })
       default:
         return Response.json({ message: "Invalid action" }, { status: 400 })
     }
